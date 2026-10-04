@@ -7,12 +7,14 @@ background:linear-gradient(160deg,#f7f6fb,#e9e7f3 60%,#f3eef6);background-color:
 .orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .orb{position:absolute;border-radius:50%;
 background:radial-gradient(circle at 30% 26%,#fff 0 5%,rgba(255,255,255,0) 14%),radial-gradient(circle at 35% 32%,var(--a),var(--b) 58%,var(--c));
-box-shadow:-34px 44px 60px rgba(90,80,140,.22),inset -12px -16px 34px rgba(255,255,255,.4);animation:float 14s ease-in-out infinite}
-.o1{width:min(30vw,340px);aspect-ratio:1;right:-4%;top:8%;--a:#7be3d4;--b:#a98ae0;--c:#e7a4d9}
-.o2{width:min(20vw,220px);aspect-ratio:1;left:-3%;top:26%;--a:#ffd6a8;--b:#e9a5d6;--c:#b9b0f0;animation-delay:-4s}
-.o3{width:min(14vw,150px);aspect-ratio:1;left:6%;bottom:6%;--a:#ffe3b8;--b:#f3a9cf;--c:#c3b6f2;animation-delay:-8s}
-.o4{width:min(22vw,240px);aspect-ratio:1;right:2%;bottom:8%;--a:#ffe2b0;--b:#e7a0d4;--c:#9fd8e8;animation-delay:-2s}
-@keyframes float{50%{transform:translateY(-14px)}}
+box-shadow:-34px 44px 60px rgba(90,80,140,.22),inset -12px -16px 34px rgba(255,255,255,.4);animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+.o1{width:min(30vw,340px);aspect-ratio:1;right:-4%;top:8%;--a:#7be3d4;--b:#a98ae0;--c:#e7a4d9;animation-name:float-a;animation-duration:16s}
+.o2{width:min(20vw,220px);aspect-ratio:1;left:-3%;top:26%;--a:#ffd6a8;--b:#e9a5d6;--c:#b9b0f0;animation-name:float-b;animation-duration:13s;animation-delay:-4s}
+.o3{width:min(14vw,150px);aspect-ratio:1;left:6%;bottom:6%;--a:#ffe3b8;--b:#f3a9cf;--c:#c3b6f2;animation-name:float-c;animation-duration:11s;animation-delay:-8s}
+.o4{width:min(22vw,240px);aspect-ratio:1;right:2%;bottom:8%;--a:#ffe2b0;--b:#e7a0d4;--c:#9fd8e8;animation-name:float-a;animation-duration:15s;animation-delay:-2s}
+@keyframes float-a{0%{transform:translate(0,0) scale(1)}33%{transform:translate(-26px,-46px) scale(1.04)}66%{transform:translate(18px,-20px) scale(.97)}100%{transform:translate(0,0) scale(1)}}
+@keyframes float-b{0%{transform:translate(0,0) scale(1)}50%{transform:translate(32px,-38px) scale(1.05)}100%{transform:translate(0,0) scale(1)}}
+@keyframes float-c{0%{transform:translate(0,0)}50%{transform:translate(-22px,34px)}100%{transform:translate(0,0)}}
 @media(prefers-reduced-motion:reduce){.orb{animation:none}html{scroll-behavior:auto}}
 .pill{display:inline-block;padding:8px 18px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);
 backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--ink);text-decoration:none;font-size:15px}
