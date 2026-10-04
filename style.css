@@ -37,3 +37,13 @@ ul{margin:0;padding-left:20px}li{margin:4px 0}
 p{margin:0}
 .small{color:var(--muted);font-size:15px}
 .cta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:30px}
+.page-title{font:600 clamp(32px,7vw,56px)/1.1 "Cormorant Garamond",Georgia,serif;letter-spacing:.02em;margin:0 0 10px;color:#2a2745}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.res-card{background:rgba(255,255,255,.55);border:1px solid var(--edge);border-radius:16px;padding:16px}
+.res-card h3{font:600 18px "Cormorant Garamond",Georgia,serif;margin:0 0 4px}
+.res-card .pill{margin-top:10px;padding:6px 14px;font-size:14px}
+.level-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:10px}
+.level-card{display:block;text-align:center;background:var(--glass);border:1px solid var(--edge);border-radius:20px;padding:28px 16px;
+backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(90,80,140,.1);text-decoration:none;color:var(--ink);transition:transform .15s ease}
+.level-card:hover{transform:translateY(-3px)}
+.level-card h2{font:600 40px "Cormorant Garamond",Georgia,serif;margin:0 0 4px;color:#5b45c4}
