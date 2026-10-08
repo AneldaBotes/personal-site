@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What Am I? · Nature &amp; Biology · B1 – Anelda Botes</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../../favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<style>
+  /* Game-only styles. Everything else comes from the site's style.css */
+  :root{ --t1:#2fa898; --t2:#d4699f; --t3:#7d62d6; --t4:#d9962a; --accent:#5b45c4; --good:#1f8a5c; --bad:#c2453f; }
+  button{font-family:inherit;cursor:pointer}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:999px;border:1px solid transparent;
+    font:500 15px Inter,system-ui,sans-serif;background:#2a2745;color:#fff;transition:transform .15s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn.light{background:var(--glass);border-color:var(--edge);color:var(--ink);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .btn.light:hover{background:rgba(255,255,255,.7)}
+  .btn.good{background:var(--good)}
+  .btn.bad{background:var(--bad)}
+
+  /* Setup */
+  #setup{max-width:520px;margin:0 auto;text-align:center}
+  .setup-label{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .count-row{display:flex;gap:10px;justify-content:center;margin:6px 0 18px}
+  .count-row button{
+    min-width:54px;height:54px;padding:0 10px;border-radius:16px;font:600 26px "Cormorant Garamond",serif;color:var(--ink);
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);
+  }
+  .count-row button.on{border-color:var(--accent);color:var(--accent)}
+  .names{display:grid;gap:10px;margin-bottom:20px}
+  .names input{
+    width:100%;padding:11px 14px;border-radius:14px;border:1px solid var(--edge);
+    background:rgba(255,255,255,.6);font:500 16px Inter,system-ui,sans-serif;color:var(--ink);
+  }
+  .rules{margin-top:16px}
+
+  /* Scores */
+  #game{display:none}
+  .scores{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .team{
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);border-radius:16px;padding:12px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .2s,border-color .2s;
+  }
+  .team.active{transform:translateY(-3px)}
+  .team .name{font-weight:500;display:flex;align-items:center;gap:8px}
+  .team .dot{width:11px;height:11px;border-radius:50%}
+  .team .score{font:600 40px/1 "Cormorant Garamond",Georgia,serif}
+  .team .score.bump{animation:bump .5s}
+  @keyframes bump{50%{transform:scale(1.35)}}
+  .adjust{display:flex;gap:6px}
+  .adjust button{
+    padding:2px 8px;border-radius:999px;font-size:13px;color:var(--muted);
+    background:var(--glass);border:1px solid var(--edge);
+  }
+
+  /* Round */
+  .round-info{text-align:center;margin:20px 0 10px;color:var(--muted);font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+  .board{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
+  .mystery{
+    text-align:center;padding:22px 14px;border-radius:22px;
+    background:rgba(255,255,255,.6);border:3px solid var(--edge);box-shadow:0 10px 30px rgba(90,80,140,.12);
+  }
+  .bubble{
+    width:120px;height:120px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;
+    font:600 64px "Cormorant Garamond",serif;color:var(--accent);
+    background:radial-gradient(circle at 30% 26%,#fff 0 8%,rgba(255,255,255,0) 22%),radial-gradient(circle at 35% 32%,#7be3d4,#a98ae0 58%,#e7a4d9);
+    box-shadow:-14px 18px 30px rgba(90,80,140,.22),inset -8px -10px 22px rgba(255,255,255,.4);
+  }
+  .bubble.found{background:radial-gradient(circle at 30% 26%,#fff 0 8%,rgba(255,255,255,0) 22%),linear-gradient(145deg,rgba(255,255,255,.95),rgba(220,212,245,.8));font-size:68px;animation:pop .4s ease}
+  .cat{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.75);border:1px solid var(--edge);color:var(--muted)}
+  .worth{margin-top:12px;font:600 34px/1 "Cormorant Garamond",Georgia,serif}
+  .worth small{display:block;font:400 13px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+
+  .clues{display:grid;gap:10px}
+  .clue{
+    display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:16px;
+    background:rgba(255,255,255,.62);border:1px solid var(--edge);font-size:18px;line-height:1.45;
+  }
+  .clue.new{animation:pop .35s ease}
+  .clue .n{
+    flex:none;min-width:58px;text-align:center;padding:3px 0;border-radius:999px;font-size:13px;font-weight:500;
+    background:var(--glass);border:1px solid var(--edge);color:var(--muted);margin-top:2px;
+  }
+  .clue.locked{background:rgba(255,255,255,.3);border-style:dashed;color:var(--muted);font-size:15px}
+  .g{transition:background .2s,color .2s}
+  body.show-grammar .g{background:rgba(91,69,196,.14);color:var(--accent);border-radius:6px;padding:0 3px;font-weight:500}
+
+  .turn{text-align:center;font-weight:500;font-size:17px;margin:18px 0 6px}
+  .helper{text-align:center;color:var(--muted);font-size:15px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
+  .guess{display:flex;gap:10px;justify-content:center;max-width:520px;margin:14px auto 0}
+  .guess input{
+    flex:1;min-width:0;padding:12px 18px;border-radius:999px;border:2px solid var(--edge);
+    background:rgba(255,255,255,.75);font:500 18px Inter,system-ui,sans-serif;color:var(--ink);
+  }
+  .guess input:focus{outline:none;border-color:var(--accent)}
+  .guess.shake{animation:shake .45s}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .feedback{min-height:24px;text-align:center;margin-top:8px;font-weight:500;color:var(--bad)}
+  .small-btn{font-size:13px;padding:8px 14px;color:var(--muted)}
+
+  .reveal{display:none;margin-top:18px;text-align:center}
+  .reveal.show{display:block;animation:pop .35s ease}
+  .answer{font:600 clamp(30px,5vw,44px)/1.1 "Cormorant Garamond",Georgia,serif;color:#2a2745}
+  .who{margin-top:4px;font-weight:500}
+  .who.ok{color:var(--good)} .who.no{color:var(--bad)}
+  .fact{max-width:640px;margin:12px auto 0;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.62);border:1px solid var(--edge);text-align:left}
+  .fact b{font-weight:500}
+  .tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:26px}
+  @keyframes pop{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
+
+  /* Pop-up */
+  .overlay{position:fixed;inset:0;background:rgba(29,27,46,.35);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+  .overlay.show{display:flex}
+  .modal{
+    width:min(560px,100%);padding:30px 26px;text-align:center;border-radius:24px;
+    background:rgba(255,255,255,.88);border:1px solid var(--edge);
+    box-shadow:0 20px 60px rgba(90,80,140,.25);animation:pop .3s ease;
+  }
+  .m-emoji{font-size:64px;line-height:1.2;margin-bottom:6px}
+  .m-title{font:600 clamp(26px,4.5vw,36px)/1.15 "Cormorant Garamond",Georgia,serif;color:#2a2745;margin-bottom:8px}
+  .m-text{font-size:17px}
+  .final{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+  .final li{font-weight:500;font-size:18px}
+
+  @media (max-width:700px){
+    .board{grid-template-columns:1fr}
+    .mystery{display:flex;align-items:center;gap:14px;text-align:left;padding:14px}
+    .bubble{width:76px;height:76px;font-size:40px;margin:0;flex:none}
+    .bubble.found{font-size:42px}
+    .worth{margin-top:6px;font-size:26px}
+    .clue{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="orb o4"></i></div>
+<nav aria-label="Main">
+  <a class="pill" href="../../index.html">Home</a><a class="pill" href="../../materials-b1.html">B1 materials</a>
+</nav>
+<main>
+  <header>
+    <h1 class="page-title">What Am I?</h1>
+    <p class="role">B1 · Nature &amp; Biology · Clue Reveal</p>
+    <p class="small">Guess the mystery plant, animal or body part. The fewer clues you need, the more points you win!</p>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <section id="setup" class="panel">
+    <h2>Set up the game</h2>
+    <div class="setup-label">Teams</div>
+    <div class="count-row" id="countRow"></div>
+    <div class="names" id="names"></div>
+    <div class="setup-label">Rounds</div>
+    <div class="count-row" id="roundRow"></div>
+    <button class="btn" id="startBtn">Start the game</button>
+    <p class="small rules">
+      Clues appear one at a time, from hard to easy. The team whose turn it is must guess or pass.
+      Clue 1 is worth 50 points, clue 2 is worth 40, and so on. Type your answer and the game checks it. A wrong guess or a pass shows the next clue,
+      and the next team gets a chance to steal the points!
+    </p>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="game">
+    <div class="scores" id="scores"></div>
+    <div class="round-info" id="roundInfo"></div>
+
+    <div class="board">
+      <div class="mystery">
+        <div class="bubble" id="bubble">?</div>
+        <div>
+          <span class="cat" id="cat"></span>
+          <div class="worth" id="worth"></div>
+        </div>
+      </div>
+      <div class="clues" id="clues"></div>
+    </div>
+
+    <div id="playArea">
+      <div class="turn" id="turn"></div>
+      <div class="guess" id="guessForm">
+        <input type="text" id="guessInput" maxlength="40" placeholder="Type your answer…" aria-label="Your answer" autocomplete="off">
+        <button class="btn" type="button" id="checkBtn">Check</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn light" id="wrongBtn">Pass → next clue</button>
+        <button class="btn light small-btn" id="correctBtn"></button>
+      </div>
+    </div>
+
+    <div class="reveal" id="reveal">
+      <div class="answer" id="answer"></div>
+      <div class="who" id="who"></div>
+      <div class="fact" id="fact"></div>
+      <div class="actions"><button class="btn" id="nextBtn">Next round →</button></div>
+    </div>
+
+    <div class="tools">
+      <button class="btn light" id="grammarBtn">✎ Highlight grammar</button>
+      <button class="btn light" id="skipBtn">👀 Show answer</button>
+      <button class="btn light" id="fsBtn">⛶ Full screen</button>
+      <button class="btn light" id="restartBtn">↻ New game</button>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+/* =========================================================
+   GAME CONTENT — edit this part to make a new topic.
+   Each mystery:
+     e      = emoji shown when the answer is revealed
+     cat    = category (Plant, Animal, Human body…)
+     answer = the answer
+     accept = answers the game will accept when typed
+              (small spelling mistakes, a/an/the and
+               plurals are accepted automatically)
+     clues  = 5 clues, from HARD to EASY
+              put [square brackets] around grammar to
+              highlight (relative clauses, passives…)
+     fact   = a "Did you know?" fact
+   ========================================================= */
+const GAME = {
+  title: 'What Am I? Nature & Biology',
+  level: 'B1',
+  points: [50, 40, 30, 20, 10],
+  mysteries: [
+    { e:'🌳', cat:'Plant', answer:'A mangrove tree', accept:['mangrove','mangrove tree','mangroves','mangrove trees','mangrove forest'],
+      clues:[
+        "I'm a plant [which can live] where most plants would die.",
+        "Some of my roots grow up out of the mud, so I can get air.",
+        "I grow along warm coasts, in water [that is salty].",
+        "My forests protect villages from storms and big waves.",
+        "In Vietnam, I [am found] in the Mekong Delta and in Cần Giờ, near Ho Chi Minh City."
+      ],
+      fact:'Mangrove forests store <b>much more carbon</b> per hectare than most forests on land, so protecting them helps to slow down climate change.' },
+
+    { e:'🐝', cat:'Animal', answer:'A honeybee', accept:['bee','honeybee','honey bee','bees','honeybees'],
+      clues:[
+        "I live in a huge family [which is led] by one female.",
+        "I tell my sisters where to find food by dancing.",
+        "Many of the fruits and vegetables you eat [are pollinated] by me.",
+        "I make a sweet food [that almost never goes bad].",
+        "I'm a black and yellow insect [that can sting] you."
+      ],
+      fact:'Honey <b>that was found</b> in ancient Egyptian tombs, thousands of years old, was still safe to eat.' },
+
+    { e:'🪸', cat:'Ecosystem', answer:'A coral reef', accept:['coral reef','coral','reef','great barrier reef','corals'],
+      clues:[
+        "I look like a rock or a plant, but I'm made of tiny animals.",
+        "I [am built] very slowly, over thousands of years.",
+        "About a quarter of all sea creatures depend on me for food and a home.",
+        "When the sea gets too hot, I turn white and I can die.",
+        "The biggest one of me [can be seen] from space, near Australia."
+      ],
+      fact:'The Great Barrier Reef is <b>the largest structure built by living things</b> on Earth.' },
+
+    { e:'❤️', cat:'Human body', answer:'The heart', accept:['heart','human heart'],
+      clues:[
+        "I'm an organ [which never takes] a break, not even when you sleep.",
+        "I'm about the same size as your fist.",
+        "I'm divided into four parts [which are called] chambers.",
+        "Blood [is pumped] by me all around your body.",
+        "Doctors listen to me with a stethoscope. Ba-dum, ba-dum!"
+      ],
+      fact:'Your heart beats about <b>100,000 times a day</b>, which is more than 2.5 billion times in a lifetime.' },
+
+    { e:'🐙', cat:'Animal', answer:'An octopus', accept:['octopus','octopuses','octopi'],
+      clues:[
+        "I'm a clever animal [that can solve] puzzles and even open jars.",
+        "I have three hearts, and my blood is blue.",
+        "I can change my colour to hide from animals [that hunt] me.",
+        "When I'm in danger, I shoot out a cloud of ink.",
+        "I live in the sea, and I have eight arms."
+      ],
+      fact:'About <b>two-thirds</b> of an octopus\'s brain cells are in its arms, so each arm can "think" a little on its own.' },
+
+    { e:'🪴', cat:'Plant', answer:'A Venus flytrap', accept:['venus flytrap','venus fly trap','flytrap','fly trap','venus flytraps'],
+      clues:[
+        "I'm a plant, but I'm also a hunter.",
+        "I grow in poor soil, so I get my food in an unusual way.",
+        "Tiny hairs on my leaves tell me when something has landed on them.",
+        "My leaves can close in less than a second.",
+        "Flies and spiders [are caught and eaten] by me."
+      ],
+      fact:'In the wild, Venus flytraps grow naturally in <b>only one small area</b> of the world: part of North and South Carolina in the USA.' },
+
+    { e:'🦋', cat:'Animal', answer:'A butterfly', accept:['butterfly','butterflies','monarch','monarch butterfly'],
+      clues:[
+        "When I was young, I looked completely different.",
+        "I spent part of my life inside a hard case [which is called] a chrysalis.",
+        "I taste things with my feet.",
+        "I drink from flowers with a long tube [that works like] a straw.",
+        "I'm an insect with big, colourful wings."
+      ],
+      fact:'Monarch butterflies fly <b>thousands of kilometres</b> every year, from Canada and the USA to the forests of Mexico.' },
+
+    { e:'🍄', cat:'Fungus', answer:'A mushroom (a fungus)', accept:['mushroom','fungus','fungi','toadstool','mushrooms'],
+      clues:[
+        "People often think I'm a plant, but I'm not.",
+        "I can't make my own food from sunlight.",
+        "I [am usually found] in dark, wet places, like the forest floor.",
+        "I help to break down dead leaves and trees.",
+        "Some of me [can be eaten] on pizza, but some of me are poisonous!"
+      ],
+      fact:'One of <b>the largest living things</b> on Earth is a honey fungus in Oregon, USA. It grows underground and covers almost 10 km².' },
+
+    { e:'🫁', cat:'Human body', answer:'The lungs', accept:['lungs','lung'],
+      clues:[
+        "We're a pair, and we live inside your chest.",
+        "We [are protected] by your ribs.",
+        "We're full of millions of tiny air bags.",
+        "Oxygen [is passed] into your blood by us.",
+        "You use us every time you breathe in and out."
+      ],
+      fact:'If the inside of your lungs was spread out flat, it would cover about <b>half a tennis court</b>.' },
+
+    { e:'🦇', cat:'Animal', answer:'A bat', accept:['bat','bats'],
+      clues:[
+        "I'm a mammal, but I can do something [that no other mammal can do] well.",
+        "I sleep upside down during the day.",
+        "I find my way in the dark by using sound and echoes.",
+        "Some fruits, like durian, [are pollinated] by bats like me.",
+        "I'm the only mammal [that can really fly]."
+      ],
+      fact:'There are over <b>1,400 kinds</b> of bats. That\'s about one in every five kinds of mammal!' },
+
+    { e:'🪱', cat:'Animal', answer:'An earthworm', accept:['earthworm','worm','earth worm','earthworms','worms'],
+      clues:[
+        "I have no eyes, no legs and no lungs.",
+        "I breathe through my skin, so I need to stay wet.",
+        "The soil [is mixed] and made healthier by me.",
+        "After heavy rain, I [am often seen] on paths and roads.",
+        "I'm long, thin and pink, and birds love to eat me."
+      ],
+      fact:'The scientist Charles Darwin studied earthworms for <b>many years</b> and wrote a whole book about them.' },
+
+    { e:'🌻', cat:'Plant', answer:'A sunflower', accept:['sunflower','sun flower','sunflowers'],
+      clues:[
+        "When I'm young, I turn my face to follow the sun across the sky.",
+        "My seeds [are eaten] by birds and people, and they [are made] into oil.",
+        "My big 'flower' is really hundreds of tiny flowers [that grow] together.",
+        "I can grow taller than a person in just one summer.",
+        "I'm big and yellow, and I look a bit like the sun."
+      ],
+      fact:'The tallest sunflower ever recorded was <b>over 9 metres</b> tall. That\'s taller than a two-storey house!' }
+  ]
+};
+
+/* ================= GAME ENGINE (no need to edit) ================= */
+const COLORS = ['var(--t1)','var(--t2)','var(--t3)','var(--t4)'];
+const ROUND_OPTIONS = [6, 9, 12];
+let numTeams = 2, numRounds = 9, teams = [], rounds = [], r = 0, starter = 0, turn = 0, clue = 0, done = false;
+
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, ...kids){
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (k === 'class') n.className = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => n.append(c instanceof Node ? c : document.createTextNode(c)));
+  return n;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+/* turns "text [grammar] text" into text with highlight spans */
+function clueText(s){
+  const frag = document.createDocumentFragment();
+  s.split(/(\[[^\]]+\])/).forEach(part => {
+    if (part.startsWith('[')) frag.append(el('span',{class:'g'}, part.slice(1,-1)));
+    else if (part) frag.append(part);
+  });
+  return frag;
+}
+
+/* ---- Answer checking ---- */
+function norm(s){
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim()
+    .replace(/^(i think )?(you are |you re |youre |it is |its |it s )?/,'')
+    .replace(/^(a|an|the) /,'').trim();
+}
+function dist(a,b){
+  const d = Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);
+  for (let j=1;j<=b.length;j++) d[0][j]=j;
+  for (let i=1;i<=a.length;i++) for (let j=1;j<=b.length;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+function isCorrect(guess, M){
+  const g = norm(guess);
+  if (!g) return false;
+  const forms = [g, g.replace(/s$/,''), g.replace(/es$/,'')];
+  return (M.accept || [M.answer]).map(norm).some(a =>
+    forms.some(f => {
+      if (f === a || f.replace(/ /g,'') === a.replace(/ /g,'')) return true;
+      const allow = a.length >= 8 ? 2 : a.length >= 5 ? 1 : 0;   // small spelling mistakes
+      return dist(f, a) <= allow;
+    }));
+}
+function checkGuess(){
+  if (done) return;
+  const input = $('guessInput'), guess = input.value.trim();
+  if (!guess) { input.focus(); return; }
+  if (isCorrect(guess, rounds[r])) { correct(); return; }
+  const form = $('guessForm');
+  form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  const was = teams[turn].name;
+  wrong();
+  if (!done) $('feedback').textContent = `✗ “${guess}” is not right, ${was}. Next clue!`;
+}
+
+/* ---- Setup ---- */
+function renderSetup(){
+  const row = $('countRow'); row.innerHTML = '';
+  [2,3,4].forEach(n => row.append(el('button',{class: n===numTeams?'on':'', onclick:()=>{numTeams=n;renderSetup();}}, String(n))));
+  const rr = $('roundRow'); rr.innerHTML = '';
+  ROUND_OPTIONS.filter(n => n <= GAME.mysteries.length).forEach(n =>
+    rr.append(el('button',{class: n===numRounds?'on':'', onclick:()=>{numRounds=n;renderSetup();}}, String(n))));
+  const box = $('names');
+  const old = [...box.querySelectorAll('input')].map(i => i.value);
+  box.innerHTML = '';
+  for (let i=0;i<numTeams;i++){
+    box.append(el('input',{type:'text', maxlength:'20', placeholder:`Team ${i+1}`, value: old[i] || '', style:`border-left:8px solid ${COLORS[i]}`}));
+  }
+}
+function showSetup(){ $('game').style.display='none'; $('setup').style.display='block'; }
+function startGame(){
+  teams = [...$('names').querySelectorAll('input')].map((inp,i) => ({ name: inp.value.trim() || `Team ${i+1}`, score:0 }));
+  $('setup').style.display = 'none';
+  $('game').style.display = 'block';
+  newGame();
+}
+function newGame(){
+  teams.forEach(t => t.score = 0);
+  r = 0; starter = 0;
+  rounds = shuffle([...GAME.mysteries]).slice(0, Math.min(numRounds, GAME.mysteries.length));
+  showRound();
+}
+
+/* ---- Scores ---- */
+function renderScores(bumpIdx = []){
+  const s = $('scores'); s.innerHTML = '';
+  teams.forEach((t,i) => {
+    const active = !done && i===turn;
+    s.append(el('div',{class:'team' + (active?' active':''), style: active?`border-color:${COLORS[i]}`:''},
+      el('div',{class:'name'}, el('span',{class:'dot', style:`background:${COLORS[i]}`}), t.name),
+      el('div',{class:'score' + (bumpIdx.includes(i)?' bump':'')}, String(t.score)),
+      el('div',{class:'adjust'},
+        el('button',{title:'Minus 5', onclick:()=>{t.score=Math.max(0,t.score-5);renderScores([i]);}}, '−5'),
+        el('button',{title:'Plus 5', onclick:()=>{t.score+=5;renderScores([i]);}}, '+5'))
+    ));
+  });
+}
+
+/* ---- Rounds ---- */
+function showRound(){
+  done = false; clue = 0; turn = starter;
+  const M = rounds[r];
+  $('roundInfo').textContent = `Round ${r+1} of ${rounds.length}`;
+  $('bubble').className = 'bubble'; $('bubble').textContent = '?';
+  $('cat').textContent = M.cat;
+  $('reveal').classList.remove('show');
+  $('playArea').style.display = 'block';
+  renderClues(true);
+  renderPlay();
+}
+function renderClues(animateLast){
+  const M = rounds[r], box = $('clues');
+  box.innerHTML = '';
+  M.clues.forEach((c,i) => {
+    const pts = GAME.points[i];
+    if (i <= clue || done){
+      box.append(el('div',{class:'clue' + (animateLast && i===clue && !done ? ' new' : '')},
+        el('span',{class:'n'}, `${i+1} · ${pts}`), el('span',{}, clueText(c))));
+    } else {
+      box.append(el('div',{class:'clue locked'}, el('span',{class:'n'}, `${i+1} · ${pts}`), el('span',{}, 'Hidden clue')));
+    }
+  });
+}
+function renderPlay(){
+  const pts = GAME.points[clue];
+  $('worth').innerHTML = '';
+  $('worth').append(String(pts), el('small',{}, 'points now'));
+  $('turn').innerHTML = '';
+  $('turn').append(el('span',{style:`color:${COLORS[turn]};font-weight:600`}, `🔍 ${teams[turn].name}`), ': guess or pass!');
+  $('correctBtn').textContent = `Teacher: accept answer +${pts}`;
+  $('wrongBtn').textContent = clue < GAME.points.length - 1 ? 'Pass → next clue' : 'Pass → show the answer';
+  $('feedback').textContent = '';
+  $('guessInput').value = '';
+  $('guessInput').focus({preventScroll:true});
+  renderScores();
+}
+function correct(){
+  if (done) return;
+  const pts = GAME.points[clue];
+  teams[turn].score += pts;
+  reveal(`${teams[turn].name} got it with ${clue+1} clue${clue?'s':''}! +${pts} points`, true, [turn]);
+}
+function wrong(){
+  if (done) return;
+  if (clue >= GAME.points.length - 1){ reveal('Nobody guessed it this time!', false, []); return; }
+  clue++;
+  turn = (turn + 1) % teams.length;
+  renderClues(true);
+  renderPlay();
+}
+function reveal(msg, ok, bump){
+  done = true;
+  const M = rounds[r];
+  $('bubble').className = 'bubble found'; $('bubble').textContent = M.e;
+  $('worth').innerHTML = '';
+  renderClues(false);
+  $('answer').textContent = M.answer;
+  $('who').className = 'who ' + (ok ? 'ok' : 'no');
+  $('who').textContent = msg;
+  $('fact').innerHTML = '💡 <b>Did you know?</b> ' + M.fact;
+  $('nextBtn').textContent = r === rounds.length - 1 ? 'See the winner 🏆' : 'Next round →';
+  $('playArea').style.display = 'none';
+  $('reveal').classList.add('show');
+  renderScores(bump);
+}
+function nextRound(){
+  r++;
+  starter = (starter + 1) % teams.length;
+  if (r >= rounds.length){ r = rounds.length - 1; showWinner(); }
+  else showRound();
+}
+
+/* ---- Pop-ups ---- */
+function openModal(...kids){ const m=$('modal'); m.innerHTML=''; m.append(...kids); $('overlay').classList.add('show'); }
+function closeModal(){ $('overlay').classList.remove('show'); }
+function showWinner(){
+  const top = Math.max(...teams.map(t=>t.score));
+  const winners = teams.filter(t => t.score === top);
+  const ranked = [...teams].sort((a,b)=>b.score-a.score);
+  openModal(
+    el('div',{class:'m-emoji'}, '🏆'),
+    el('div',{class:'m-title'}, winners.length>1 ? "It's a tie!" : `${winners[0].name} wins!`),
+    el('ul',{class:'final'}, ranked.map(t => el('li',{}, `${t.name}: ${t.score} points`))),
+    el('div',{class:'actions'},
+      el('button',{class:'btn', onclick:()=>{closeModal();newGame();}}, '↻ Play again'),
+      el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+  );
+}
+
+/* ---- Wire up ---- */
+document.title = `What Am I? · Nature & Biology · ${GAME.level} – Anelda Botes`;
+$('startBtn').onclick = startGame;
+$('correctBtn').onclick = correct;
+$('checkBtn').onclick = checkGuess;
+$('guessInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkGuess(); } });
+$('wrongBtn').onclick = wrong;
+$('nextBtn').onclick = nextRound;
+$('skipBtn').onclick = () => { if (!done) reveal('The teacher showed the answer.', false, []); };
+$('grammarBtn').onclick = () => {
+  const on = document.body.classList.toggle('show-grammar');
+  $('grammarBtn').textContent = on ? '✎ Hide grammar' : '✎ Highlight grammar';
+};
+$('restartBtn').onclick = () => openModal(
+  el('div',{class:'m-emoji'}, '↻'),
+  el('div',{class:'m-title'}, 'Start a new game?'),
+  el('div',{class:'m-text'}, 'All scores will go back to 0 and new mysteries will be chosen.'),
+  el('div',{class:'actions'},
+    el('button',{class:'btn', onclick:()=>{closeModal();newGame();}}, 'Yes, new game'),
+    el('button',{class:'btn light', onclick:closeModal}, 'Cancel'),
+    el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+);
+$('fsBtn').onclick = () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+renderSetup();
+</script>
+</body>
+</html>
