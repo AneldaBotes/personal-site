@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Higher or Lower? · Nature Records · A2 – Anelda Botes</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../../favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<style>
+  /* Game-only styles. Everything else comes from the site's style.css */
+  :root{ --t1:#2fa898; --t2:#d4699f; --t3:#7d62d6; --t4:#d9962a; --accent:#5b45c4; --good:#1f8a5c; --bad:#c2453f; }
+  button{font-family:inherit;cursor:pointer}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:999px;border:1px solid transparent;
+    font:500 15px Inter,system-ui,sans-serif;background:#2a2745;color:#fff;transition:transform .15s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:disabled{opacity:.45;cursor:default;transform:none}
+  .btn.light{background:var(--glass);border-color:var(--edge);color:var(--ink);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .btn.light:hover{background:rgba(255,255,255,.7)}
+  .btn.good{background:var(--good)}
+
+  /* Setup */
+  #setup{max-width:520px;margin:0 auto;text-align:center}
+  .count-row{display:flex;gap:10px;justify-content:center;margin:6px 0 18px}
+  .count-row button{
+    width:54px;height:54px;border-radius:16px;font:600 26px "Cormorant Garamond",serif;color:var(--ink);
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);
+  }
+  .count-row button.on{border-color:var(--accent);color:var(--accent)}
+  .names{display:grid;gap:10px;margin-bottom:20px}
+  .names input{
+    width:100%;padding:11px 14px;border-radius:14px;border:1px solid var(--edge);
+    background:rgba(255,255,255,.6);font:500 16px Inter,system-ui,sans-serif;color:var(--ink);
+  }
+  .rules{margin-top:16px}
+
+  /* Scores */
+  #game{display:none}
+  .scores{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .team{
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);border-radius:16px;padding:12px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .2s,border-color .2s;
+  }
+  .team.active{transform:translateY(-3px)}
+  .team .name{font-weight:500;display:flex;align-items:center;gap:8px}
+  .team .dot{width:11px;height:11px;border-radius:50%}
+  .team .score{font:600 40px/1 "Cormorant Garamond",Georgia,serif}
+  .team .score.bump{animation:bump .5s}
+  @keyframes bump{50%{transform:scale(1.35)}}
+  .adjust{display:flex;gap:6px}
+  .adjust button{
+    padding:2px 8px;border-radius:999px;font-size:13px;color:var(--muted);
+    background:var(--glass);border:1px solid var(--edge);
+  }
+
+  /* Round */
+  .round-info{text-align:center;margin:20px 0 4px;color:var(--muted);font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+  .question{text-align:center;font:600 clamp(30px,6vw,48px)/1.1 "Cormorant Garamond",Georgia,serif;color:#2a2745}
+  .turn{text-align:center;font-weight:500;font-size:17px;margin:6px 0 16px}
+  .stage{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+  .vs{
+    width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+    font:600 22px "Cormorant Garamond",serif;color:var(--accent);
+    background:radial-gradient(circle at 30% 26%,#fff 0 8%,rgba(255,255,255,0) 22%),linear-gradient(145deg,rgba(255,255,255,.9),rgba(220,212,245,.7));
+    border:1px solid var(--edge);box-shadow:0 8px 24px rgba(90,80,140,.15);
+  }
+  .card{
+    background:rgba(255,255,255,.6);border:3px solid var(--edge);border-radius:22px;padding:22px 16px;
+    text-align:center;color:var(--ink);box-shadow:0 10px 30px rgba(90,80,140,.12);
+    transition:transform .15s,border-color .2s;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  }
+  .card:not([disabled]):hover{transform:translateY(-4px)}
+  .card .e{font-size:64px;line-height:1.1}
+  .card .t{font:600 clamp(22px,3.5vw,30px)/1.15 "Cormorant Garamond",Georgia,serif}
+  .card .v{
+    margin-top:6px;padding:6px 14px;border-radius:999px;font-weight:500;font-size:16px;
+    background:rgba(255,255,255,.75);border:1px solid var(--edge);color:var(--muted);
+  }
+  .card.picked{border-color:var(--accent)}
+  .card.win{border-color:var(--good)}
+  .card.win .v{background:rgba(31,138,92,.12);color:var(--good);border-color:var(--good)}
+  .card.revealed .v{animation:pop .35s ease}
+  .card[disabled]{cursor:default}
+
+  .helper{
+    margin:18px auto 0;max-width:620px;text-align:center;padding:12px 18px;border-radius:16px;
+    background:rgba(255,255,255,.55);border:1px dashed var(--accent);font-size:17px;
+  }
+  .helper b{color:var(--accent);font-weight:500}
+  .result{margin:18px auto 0;max-width:620px;text-align:center;display:none}
+  .result.show{display:block;animation:pop .35s ease}
+  .verdict{font:600 30px/1.2 "Cormorant Garamond",Georgia,serif}
+  .verdict.ok{color:var(--good)} .verdict.no{color:var(--bad)}
+  .fact{margin-top:8px;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.6);border:1px solid var(--edge)}
+  .fact b{font-weight:500}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+  .tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:26px}
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+
+  /* Pop-up */
+  .overlay{
+    position:fixed;inset:0;background:rgba(29,27,46,.35);display:none;
+    align-items:center;justify-content:center;padding:16px;z-index:10;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    width:min(560px,100%);padding:30px 26px;text-align:center;border-radius:24px;
+    background:rgba(255,255,255,.88);border:1px solid var(--edge);
+    box-shadow:0 20px 60px rgba(90,80,140,.25);animation:pop .3s ease;
+  }
+  .m-emoji{font-size:64px;line-height:1.2;margin-bottom:6px}
+  .m-title{font:600 clamp(26px,4.5vw,36px)/1.15 "Cormorant Garamond",Georgia,serif;color:#2a2745;margin-bottom:8px}
+  .m-text{font-size:17px}
+  .final{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+  .final li{font-weight:500;font-size:18px}
+
+  @media (max-width:640px){
+    .stage{grid-template-columns:1fr;gap:10px}
+    .vs{margin:0 auto;width:46px;height:46px;font-size:18px}
+    .card{min-height:0;padding:16px}
+    .card .e{font-size:48px}
+  }
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="orb o4"></i></div>
+<nav aria-label="Main">
+  <a class="pill" href="../../index.html">Home</a><a class="pill" href="../../materials-a2.html">A2 materials</a>
+</nav>
+<main>
+  <header>
+    <h1 class="page-title">Nature Records</h1>
+    <p class="role">A2 · Higher or Lower?</p>
+    <p class="small">Which is faster, older, deeper, colder? Choose a card and find out!</p>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <section id="setup" class="panel">
+    <h2>How many teams?</h2>
+    <div class="count-row" id="countRow"></div>
+    <div class="names" id="names"></div>
+    <button class="btn" id="startBtn">Start the game</button>
+    <p class="small rules">
+      Each round shows two things from nature. The team says which one is faster, bigger, older…
+      in a full sentence, then picks a card. Correct answer: 10 points. Full sentence: +5 bonus!
+    </p>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="game">
+    <div class="scores" id="scores"></div>
+    <div class="round-info" id="roundInfo"></div>
+    <div class="question" id="question"></div>
+    <div class="turn" id="turn"></div>
+
+    <div class="stage">
+      <button class="card" id="cardA"></button>
+      <div class="vs">vs</div>
+      <button class="card" id="cardB"></button>
+    </div>
+
+    <div class="helper" id="helper"></div>
+
+    <div class="result" id="result">
+      <div class="verdict" id="verdict"></div>
+      <div class="fact" id="fact"></div>
+      <div class="actions">
+        <button class="btn good" id="bonusBtn">✓ Full sentence +5</button>
+        <button class="btn" id="nextBtn">Next round →</button>
+      </div>
+    </div>
+
+    <div class="tools">
+      <button class="btn light" id="fsBtn">⛶ Full screen</button>
+      <button class="btn light" id="restartBtn">↻ New game</button>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+/* =========================================================
+   GAME CONTENT — edit this part to make a new topic.
+   Each round:
+     q    = the question
+     comp = the comparative used in the sentence helper
+     win  = the correct answer, lose = the other one
+            (e = emoji, t = title on the card,
+             s = name used in a sentence, v = the record)
+     fact = superlative fact shown after the answer
+   The game shuffles the rounds and the left/right sides.
+   ========================================================= */
+const GAME = {
+  title: 'Nature Records',
+  level: 'A2',
+  points: 10,
+  bonus: 5,
+  rounds: [
+    { q:'Which is faster?', comp:'is faster',
+      win:{ e:'🦅', t:'Peregrine falcon', s:'the peregrine falcon', v:'over 300 km/h (diving)' },
+      lose:{ e:'🐆', t:'Cheetah', s:'the cheetah', v:'about 110 km/h' },
+      fact:'The peregrine falcon is <b>the fastest</b> animal in the world when it dives.' },
+
+    { q:'Which is heavier?', comp:'is heavier',
+      win:{ e:'🐘', t:'African elephant', s:'the African elephant', v:'up to about 6,000 kg' },
+      lose:{ e:'🦛', t:'Hippo', s:'the hippo', v:'up to about 3,000 kg' },
+      fact:'The African elephant is <b>the heaviest</b> animal on land.' },
+
+    { q:'Which lives longer?', comp:'lives longer',
+      win:{ e:'🐢', t:'Giant tortoise', s:'a giant tortoise', v:'over 100 years' },
+      lose:{ e:'🧑', t:'Human', s:'a human', v:'about 73 years (on average)' },
+      fact:'Giant tortoises are some of <b>the longest-living</b> animals on land.' },
+
+    { q:'Which is taller?', comp:'is taller',
+      win:{ e:'🦒', t:'Giraffe', s:'the giraffe', v:'up to about 5.5 m' },
+      lose:{ e:'🦤', t:'Ostrich', s:'the ostrich', v:'up to about 2.7 m' },
+      fact:'The giraffe is <b>the tallest</b> animal in the world.' },
+
+    { q:'Which is taller?', comp:'is taller',
+      win:{ e:'🌲', t:'Coast redwood tree', s:'the tallest redwood tree', v:'about 116 m' },
+      lose:{ e:'🗽', t:'Statue of Liberty', s:'the Statue of Liberty', v:'about 93 m' },
+      fact:'Coast redwoods in California are <b>the tallest</b> trees in the world.' },
+
+    { q:'Which is older?', comp:'is older',
+      win:{ e:'🌳', t:'Oldest bristlecone pine', s:'the oldest bristlecone pine', v:'about 4,800 years old' },
+      lose:{ e:'🔺', t:'Great Pyramid of Giza', s:'the Great Pyramid', v:'about 4,500 years old' },
+      fact:'Bristlecone pines in the USA are some of <b>the oldest</b> living trees on Earth.' },
+
+    { q:'Which is longer?', comp:'is longer',
+      win:{ e:'🏞️', t:'Mekong River', s:'the Mekong River', v:'about 4,350 km' },
+      lose:{ e:'🌉', t:'Danube River', s:'the Danube River', v:'about 2,850 km' },
+      fact:'The Mekong flows through six countries, and it is <b>the longest</b> river in Southeast Asia.' },
+
+    { q:'Which is higher?', comp:'is higher',
+      win:{ e:'🏔️', t:'Mount Everest', s:'Mount Everest', v:'8,849 m' },
+      lose:{ e:'⛰️', t:'K2', s:'K2', v:'8,611 m' },
+      fact:'Mount Everest is <b>the highest</b> mountain in the world.' },
+
+    { q:'Which is higher?', comp:'is higher',
+      win:{ e:'🗻', t:'Mount Fuji', s:'Mount Fuji', v:'3,776 m' },
+      lose:{ e:'⛰️', t:'Fansipan', s:'Fansipan', v:'3,143 m' },
+      fact:'Mount Fuji is <b>the highest</b> mountain in Japan, and Fansipan is <b>the highest</b> in Vietnam.' },
+
+    { q:'Which is higher?', comp:'is higher',
+      win:{ e:'💧', t:'Angel Falls', s:'Angel Falls', v:'about 979 m' },
+      lose:{ e:'🌊', t:'Niagara Falls', s:'Niagara Falls', v:'about 57 m' },
+      fact:'Angel Falls in Venezuela is <b>the highest</b> waterfall in the world.' },
+
+    { q:'Which is deeper?', comp:'is deeper',
+      win:{ e:'🌏', t:'Pacific Ocean', s:'the Pacific Ocean', v:'about 11,000 m at its deepest' },
+      lose:{ e:'🌍', t:'Atlantic Ocean', s:'the Atlantic Ocean', v:'about 8,400 m at its deepest' },
+      fact:'The Pacific is <b>the biggest</b> and <b>the deepest</b> ocean on Earth.' },
+
+    { q:'Which is deeper?', comp:'is deeper',
+      win:{ e:'🧊', t:'Lake Baikal', s:'Lake Baikal', v:'about 1,640 m' },
+      lose:{ e:'🛶', t:'Lake Superior', s:'Lake Superior', v:'about 400 m' },
+      fact:'Lake Baikal in Russia is <b>the deepest</b> lake in the world.' },
+
+    { q:'Which is bigger?', comp:'is bigger',
+      win:{ e:'🏜️', t:'Sahara Desert', s:'the Sahara Desert', v:'about 9 million km²' },
+      lose:{ e:'🐫', t:'Gobi Desert', s:'the Gobi Desert', v:'about 1.3 million km²' },
+      fact:'The Sahara is <b>the biggest</b> hot desert in the world.' },
+
+    { q:'Which is colder?', comp:'is colder',
+      win:{ e:'🐧', t:'Antarctica', s:'Antarctica', v:'about −60°C in winter' },
+      lose:{ e:'🐻‍❄️', t:'The Arctic', s:'the Arctic', v:'about −40°C in winter' },
+      fact:'Antarctica is <b>the coldest</b> place on Earth.' },
+
+    { q:'Which grows faster?', comp:'grows faster',
+      win:{ e:'🎋', t:'Bamboo', s:'bamboo', v:'up to 90 cm in one day' },
+      lose:{ e:'🌳', t:'Oak tree', s:'an oak tree', v:'about 30–60 cm in one year' },
+      fact:'Some bamboo is one of <b>the fastest-growing</b> plants in the world.' },
+
+    { q:'Which is bigger?', comp:'is bigger',
+      win:{ e:'🌴', t:'Amazon rainforest', s:'the Amazon rainforest', v:'about 5.5 million km²' },
+      lose:{ e:'🇻🇳', t:'Vietnam', s:'Vietnam', v:'about 331,000 km²' },
+      fact:'The Amazon is <b>the biggest</b> rainforest in the world.' }
+  ]
+};
+
+/* ================= GAME ENGINE (no need to edit) ================= */
+const COLORS = ['var(--t1)','var(--t2)','var(--t3)','var(--t4)'];
+let numTeams = 2, teams = [], turn = 0, rounds = [], r = 0, answered = false, bonusGiven = false, scorer = 0;
+
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, ...kids){
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (k === 'class') n.className = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => n.append(c instanceof Node ? c : document.createTextNode(c)));
+  return n;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ---- Setup ---- */
+function renderSetup(){
+  const row = $('countRow'); row.innerHTML = '';
+  [2,3,4].forEach(n => row.append(el('button',{class: n===numTeams?'on':'', onclick:()=>{numTeams=n;renderSetup();}}, String(n))));
+  const box = $('names');
+  const old = [...box.querySelectorAll('input')].map(i => i.value);
+  box.innerHTML = '';
+  for (let i=0;i<numTeams;i++){
+    box.append(el('input',{type:'text', maxlength:'20', placeholder:`Team ${i+1}`, value: old[i] || '', style:`border-left:8px solid ${COLORS[i]}`}));
+  }
+}
+function showSetup(){ $('game').style.display='none'; $('setup').style.display='block'; }
+function startGame(){
+  teams = [...$('names').querySelectorAll('input')].map((inp,i) => ({ name: inp.value.trim() || `Team ${i+1}`, score:0 }));
+  $('setup').style.display = 'none';
+  $('game').style.display = 'block';
+  newGame();
+}
+function newGame(){
+  teams.forEach(t => t.score = 0);
+  turn = 0; r = 0;
+  rounds = shuffle(GAME.rounds.map(x => ({...x, winLeft: Math.random() < .5})));
+  showRound();
+}
+
+/* ---- Scores ---- */
+function renderScores(bumpIdx = []){
+  const s = $('scores'); s.innerHTML = '';
+  teams.forEach((t,i) => {
+    s.append(el('div',{class:'team' + (i===turn?' active':''), style: i===turn?`border-color:${COLORS[i]}`:''},
+      el('div',{class:'name'}, el('span',{class:'dot', style:`background:${COLORS[i]}`}), t.name),
+      el('div',{class:'score' + (bumpIdx.includes(i)?' bump':'')}, String(t.score)),
+      el('div',{class:'adjust'},
+        el('button',{title:'Minus 5', onclick:()=>{t.score=Math.max(0,t.score-5);renderScores([i]);}}, '−5'),
+        el('button',{title:'Plus 5', onclick:()=>{t.score+=5;renderScores([i]);}}, '+5'))
+    ));
+  });
+}
+
+/* ---- Rounds ---- */
+function fillCard(card, item){
+  card.innerHTML = '';
+  card.className = 'card';
+  card.disabled = false;
+  card.append(
+    el('div',{class:'e'}, item.e),
+    el('div',{class:'t'}, item.t),
+    el('div',{class:'v'}, '?')
+  );
+}
+function showRound(){
+  answered = false; bonusGiven = false;
+  const R = rounds[r];
+  const left = R.winLeft ? R.win : R.lose, right = R.winLeft ? R.lose : R.win;
+  $('roundInfo').textContent = `Round ${r+1} of ${rounds.length}`;
+  $('question').textContent = R.q;
+  $('turn').innerHTML = '';
+  $('turn').append(el('span',{style:`color:${COLORS[turn]};font-weight:600`}, `🌿 ${teams[turn].name}`), ': say your answer, then choose a card!');
+  fillCard($('cardA'), left);
+  fillCard($('cardB'), right);
+  $('helper').innerHTML = '';
+  $('helper').append('Say it: “I think ', el('b',{}, left.s), ` ${R.comp} than `, el('b',{}, right.s), '.”  or  “I think ', el('b',{}, right.s), ` ${R.comp} than `, el('b',{}, left.s), '.”');
+  $('helper').style.display = 'block';
+  $('result').classList.remove('show');
+  renderScores();
+}
+function choose(side){
+  if (answered) return;
+  answered = true;
+  const R = rounds[r];
+  const pickedLeft = side === 'A';
+  const correct = pickedLeft === R.winLeft;
+  const left = R.winLeft ? R.win : R.lose, right = R.winLeft ? R.lose : R.win;
+
+  [['cardA', left, R.winLeft], ['cardB', right, !R.winLeft]].forEach(([id, item, isWin]) => {
+    const c = $(id);
+    c.disabled = true;
+    c.querySelector('.v').textContent = item.v;
+    c.classList.add('revealed');
+    if (isWin) c.classList.add('win');
+  });
+  $(pickedLeft ? 'cardA' : 'cardB').classList.add('picked');
+
+  scorer = turn;
+  if (correct) teams[turn].score += GAME.points;
+
+  $('verdict').className = 'verdict ' + (correct ? 'ok' : 'no');
+  $('verdict').textContent = correct ? `Correct! +${GAME.points} points` : 'Not this time!';
+  $('fact').innerHTML = `${cap(R.win.s)} ${R.comp} than ${R.lose.s}. ` + R.fact;
+  $('bonusBtn').disabled = false;
+  $('bonusBtn').textContent = `✓ Full sentence +${GAME.bonus}`;
+  $('nextBtn').textContent = r === rounds.length - 1 ? 'See the winner 🏆' : 'Next round →';
+  $('helper').style.display = 'none';
+  $('result').classList.add('show');
+  renderScores(correct ? [turn] : []);
+}
+function giveBonus(){
+  if (bonusGiven) return;
+  bonusGiven = true;
+  teams[scorer].score += GAME.bonus;
+  $('bonusBtn').disabled = true;
+  $('bonusBtn').textContent = `Bonus given to ${teams[scorer].name}`;
+  renderScores([scorer]);
+}
+function nextRound(){
+  turn = (turn + 1) % teams.length;
+  r++;
+  if (r >= rounds.length) { r = rounds.length - 1; renderScores(); showWinner(); }
+  else showRound();
+}
+
+/* ---- Pop-ups ---- */
+function openModal(...kids){ const m=$('modal'); m.innerHTML=''; m.append(...kids); $('overlay').classList.add('show'); }
+function closeModal(){ $('overlay').classList.remove('show'); }
+function showWinner(){
+  const top = Math.max(...teams.map(t=>t.score));
+  const winners = teams.filter(t => t.score === top);
+  const ranked = [...teams].sort((a,b)=>b.score-a.score);
+  openModal(
+    el('div',{class:'m-emoji'}, '🏆'),
+    el('div',{class:'m-title'}, winners.length>1 ? "It's a tie!" : `${winners[0].name} wins!`),
+    el('ul',{class:'final'}, ranked.map(t => el('li',{}, `${t.name}: ${t.score} points`))),
+    el('div',{class:'actions'},
+      el('button',{class:'btn', onclick:()=>{closeModal();newGame();}}, '↻ Play again'),
+      el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+  );
+}
+
+/* ---- Wire up ---- */
+document.title = `Higher or Lower? · ${GAME.title} · ${GAME.level} – Anelda Botes`;
+$('startBtn').onclick = startGame;
+$('cardA').onclick = () => choose('A');
+$('cardB').onclick = () => choose('B');
+$('bonusBtn').onclick = giveBonus;
+$('nextBtn').onclick = nextRound;
+$('restartBtn').onclick = () => openModal(
+  el('div',{class:'m-emoji'}, '↻'),
+  el('div',{class:'m-title'}, 'Start a new game?'),
+  el('div',{class:'m-text'}, 'All scores will go back to 0 and the rounds will be shuffled.'),
+  el('div',{class:'actions'},
+    el('button',{class:'btn', onclick:()=>{closeModal();newGame();}}, 'Yes, new game'),
+    el('button',{class:'btn light', onclick:closeModal}, 'Cancel'),
+    el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+);
+$('fsBtn').onclick = () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+renderSetup();
+</script>
+</body>
+</html>
