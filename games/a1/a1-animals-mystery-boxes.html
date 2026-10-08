@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mystery Boxes · Animals and Where They Live · A1 – Anelda Botes</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../../favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../style.css">
+<style>
+  /* Game-only styles. Everything else comes from the site's style.css */
+  :root{ --t1:#2fa898; --t2:#d4699f; --t3:#7d62d6; --t4:#d9962a; --accent:#5b45c4; }
+  button{font-family:inherit;cursor:pointer}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:999px;border:1px solid transparent;
+    font:500 15px Inter,system-ui,sans-serif;background:#2a2745;color:#fff;transition:transform .15s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn.light{background:var(--glass);border-color:var(--edge);color:var(--ink);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .btn.light:hover{background:rgba(255,255,255,.7)}
+  .btn.good{background:#1f8a5c}
+  .btn.bad{background:#c2453f}
+
+  /* Setup */
+  #setup{max-width:520px;margin:0 auto;text-align:center}
+  .count-row{display:flex;gap:10px;justify-content:center;margin:6px 0 18px}
+  .count-row button{
+    width:54px;height:54px;border-radius:16px;font:600 26px "Cormorant Garamond",serif;color:var(--ink);
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);
+  }
+  .count-row button.on{border-color:var(--accent);color:var(--accent)}
+  .names{display:grid;gap:10px;margin-bottom:20px}
+  .names input{
+    width:100%;padding:11px 14px;border-radius:14px;border:1px solid var(--edge);
+    background:rgba(255,255,255,.6);font:500 16px Inter,system-ui,sans-serif;color:var(--ink);
+  }
+  .rules{margin-top:16px}
+
+  /* Game */
+  #game{display:none}
+  .scores{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .team{
+    background:rgba(255,255,255,.55);border:2px solid var(--edge);border-radius:16px;padding:12px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .2s,border-color .2s;
+  }
+  .team.active{transform:translateY(-3px)}
+  .team .name{font-weight:500;display:flex;align-items:center;gap:8px}
+  .team .dot{width:11px;height:11px;border-radius:50%}
+  .team .score{font:600 40px/1 "Cormorant Garamond",Georgia,serif}
+  .team .score.bump{animation:bump .5s}
+  @keyframes bump{50%{transform:scale(1.35)}}
+  .adjust{display:flex;gap:6px}
+  .adjust button{
+    padding:2px 8px;border-radius:999px;font-size:13px;color:var(--muted);
+    background:var(--glass);border:1px solid var(--edge);
+  }
+  .turn{text-align:center;font-weight:500;font-size:18px;margin:18px 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .box{
+    aspect-ratio:1/1;border-radius:18px;border:1px solid var(--edge);color:var(--accent);
+    font:600 clamp(26px,4vw,40px) "Cormorant Garamond",Georgia,serif;
+    background:
+      radial-gradient(circle at 30% 26%,#fff 0 6%,rgba(255,255,255,0) 18%),
+      linear-gradient(145deg,rgba(255,255,255,.85),rgba(220,212,245,.65));
+    box-shadow:0 8px 24px rgba(90,80,140,.15);transition:transform .15s;
+  }
+  .box:hover:not(.used){transform:translateY(-4px) rotate(-1deg)}
+  .box.used{cursor:default;font-size:clamp(20px,3vw,30px);opacity:.85;background:var(--team)}
+  .tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+  /* Pop-up */
+  .overlay{
+    position:fixed;inset:0;background:rgba(29,27,46,.35);display:none;
+    align-items:center;justify-content:center;padding:16px;z-index:10;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    width:min(640px,100%);padding:30px 26px;text-align:center;border-radius:24px;
+    background:rgba(255,255,255,.88);border:1px solid var(--edge);
+    box-shadow:0 20px 60px rgba(90,80,140,.25);animation:pop .3s ease;
+  }
+  @keyframes pop{from{transform:scale(.8) rotate(-3deg);opacity:0}to{transform:none;opacity:1}}
+  .m-meta{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .m-emoji{font-size:68px;line-height:1.2;margin:10px 0}
+  .m-title{font:600 clamp(26px,4.5vw,38px)/1.15 "Cormorant Garamond",Georgia,serif;color:#2a2745;margin-bottom:8px}
+  .m-text{font-size:18px;margin-bottom:8px}
+  .m-answer{
+    margin:14px auto 0;padding:12px 18px;border-radius:16px;max-width:480px;font-weight:500;font-size:19px;
+    background:rgba(31,138,92,.1);border:2px dashed #1f8a5c;
+  }
+  .hidden{display:none}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px}
+  .final{list-style:none;padding:0;margin:14px 0;display:grid;gap:6px}
+  .final li{font-weight:500;font-size:18px}
+
+  @media (max-width:640px){
+    .grid{grid-template-columns:repeat(4,1fr);gap:8px}
+    .box{border-radius:14px}
+  }
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="orb o4"></i></div>
+<nav aria-label="Main">
+  <a class="pill" href="../../index.html">Home</a><a class="pill" id="backLink" href="../../materials-a1.html">A1 materials</a>
+</nav>
+<main>
+  <header>
+    <h1 class="page-title" id="gameTitle">Animals &amp; Where They Live</h1>
+    <p class="role">A1 · Mystery Boxes</p>
+    <p class="small">Pick a box. Answer the question. Watch out for surprises!</p>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <section id="setup" class="panel">
+    <h2>How many teams?</h2>
+    <div class="count-row" id="countRow"></div>
+    <div class="names" id="names"></div>
+    <button class="btn" id="startBtn">Start the game</button>
+    <p class="small rules">
+      Teams take turns choosing a box. Most boxes have a question.
+      Some boxes have a surprise: double points, lose everything, swap, steal or a free gift!
+    </p>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="game">
+    <div class="scores" id="scores"></div>
+    <div class="turn" id="turn"></div>
+    <div class="grid" id="grid"></div>
+    <div class="tools">
+      <button class="btn light" id="fsBtn">⛶ Full screen</button>
+      <button class="btn light" id="restartBtn">↻ New game</button>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+/* =========================================================
+   GAME CONTENT — edit this part to make a new topic.
+   Each question: emoji, q (question), a (answer), points.
+   ========================================================= */
+const GAME = {
+  title: 'Animals & Where They Live',
+  level: 'A1',
+  questions: [
+    { emoji:'🐟', q:'Where does a fish live?', a:'In water: the sea, a river or a lake.', points:10 },
+    { emoji:'🐧', q:'Where does a penguin live?', a:'In a cold place, on the ice (Antarctica).', points:10 },
+    { emoji:'🐪', q:'This animal lives in the desert. It has humps. What is it?', a:'A camel.', points:10 },
+    { emoji:'🐒', q:'Where does a monkey live?', a:'In the jungle, in the trees.', points:10 },
+    { emoji:'🐄', q:'Where does a cow live?', a:'On a farm.', points:10 },
+    { emoji:'🐻‍❄️', q:'What colour is a polar bear?', a:'White.', points:10 },
+    { emoji:'🦒', q:'Which animal has a very long neck?', a:'A giraffe.', points:10 },
+    { emoji:'🌊', q:'Name 3 animals that can swim.', a:'For example: fish, dolphin, duck, frog, whale, turtle.', points:20 },
+    { emoji:'🕊️', q:'Name 3 animals that can fly.', a:'For example: bird, bee, butterfly, bat, owl.', points:20 },
+    { emoji:'🐸', q:'Can a frog jump? Answer in a full sentence.', a:'Yes, it can.', points:10 },
+    { emoji:'🐍', q:'Can a snake walk? Why?', a:"No, it can't. It has no legs.", points:10 },
+    { emoji:'🦉', q:'Where does an owl live?', a:'In a tree, in the forest.', points:10 },
+    { emoji:'🔤', q:'Unscramble the animal: L - A - H - W - E', a:'WHALE', points:10 },
+    { emoji:'🐝', q:'What does a bee make?', a:'Honey.', points:10 },
+    { emoji:'🕷️', q:'How many legs does a spider have?', a:'Eight (8).', points:10 },
+    { emoji:'🐦', q:'Finish the sentence: "A bird has two legs and two ____."', a:'wings', points:10 },
+    { emoji:'🐊', q:'True or false? A crocodile lives in a river.', a:'True!', points:10 },
+    { emoji:'🐨', q:'Where does a koala live?', a:'In trees, in Australia.', points:10 },
+    { emoji:'🎤', q:'Describe an animal in 3 sentences. Your team guesses it!', a:'Teacher decides. Example: "It is big. It is grey. It has a long nose." (an elephant)', points:20 }
+  ],
+  surprises: [
+    { type:'double', emoji:'⭐', title:'Double points!', text:"Your team's points are doubled!" },
+    { type:'zero',   emoji:'💣', title:'Boom!', text:'Oh no! Your team loses all its points.' },
+    { type:'swap',   emoji:'🔄', title:'Swap!', text:'Swap points with another team. Choose a team:' },
+    { type:'steal',  emoji:'🦊', title:'Sneaky fox!', text:'Steal 10 points from another team. Choose a team:', value:10 },
+    { type:'bonus',  emoji:'🎁', title:'A gift!', text:'Your team gets 20 free points!', value:20 }
+  ]
+};
+
+/* ================= GAME ENGINE (no need to edit) ================= */
+const COLORS = ['var(--t1)','var(--t2)','var(--t3)','var(--t4)'];
+let numTeams = 2, teams = [], turn = 0, boxes = [];
+
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, ...kids){
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (k === 'class') n.className = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => n.append(c instanceof Node ? c : document.createTextNode(c)));
+  return n;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ---- Setup ---- */
+function renderSetup(){
+  const row = $('countRow'); row.innerHTML = '';
+  [2,3,4].forEach(n => row.append(el('button',{class: n===numTeams?'on':'', onclick:()=>{numTeams=n;renderSetup();}}, String(n))));
+  const box = $('names');
+  const old = [...box.querySelectorAll('input')].map(i => i.value);
+  box.innerHTML = '';
+  for (let i=0;i<numTeams;i++){
+    box.append(el('input',{type:'text', maxlength:'20', placeholder:`Team ${i+1}`, value: old[i] || '', style:`border-left:8px solid ${COLORS[i]}`}));
+  }
+}
+function showSetup(){ $('game').style.display='none'; $('setup').style.display='block'; }
+function startGame(){
+  teams = [...$('names').querySelectorAll('input')].map((inp,i) => ({ name: inp.value.trim() || `Team ${i+1}`, score:0 }));
+  $('setup').style.display = 'none';
+  $('game').style.display = 'block';
+  newBoard();
+}
+function newBoard(){
+  teams.forEach(t => t.score = 0);
+  turn = 0;
+  boxes = shuffle([
+    ...GAME.questions.map(q => ({kind:'q', ...q})),
+    ...GAME.surprises.map(s => ({kind:'s', ...s}))
+  ]).map(b => ({...b, used:false, team:null}));
+  renderAll();
+}
+
+/* ---- Rendering ---- */
+function renderScores(bumpIdx = []){
+  const s = $('scores'); s.innerHTML = '';
+  teams.forEach((t,i) => {
+    s.append(el('div',{class:'team' + (i===turn?' active':''), style: i===turn?`border-color:${COLORS[i]}`:''},
+      el('div',{class:'name'}, el('span',{class:'dot', style:`background:${COLORS[i]}`}), t.name),
+      el('div',{class:'score' + (bumpIdx.includes(i)?' bump':'')}, String(t.score)),
+      el('div',{class:'adjust'},
+        el('button',{title:'Minus 5', onclick:()=>{t.score=Math.max(0,t.score-5);renderScores([i]);}}, '−5'),
+        el('button',{title:'Plus 5', onclick:()=>{t.score+=5;renderScores([i]);}}, '+5'))
+    ));
+  });
+}
+function renderGrid(){
+  const g = $('grid'); g.innerHTML = '';
+  boxes.forEach((b,i) => {
+    g.append(el('button',{
+      class:'box' + (b.used?' used':''),
+      style: b.used ? `--team:${COLORS[b.team]}` : '',
+      onclick:()=>openBox(i)
+    }, b.used ? b.emoji : String(i+1)));
+  });
+}
+function renderTurn(){
+  $('turn').innerHTML = '';
+  $('turn').append(el('span',{style:`color:${COLORS[turn]};font-weight:600`}, `🐾 ${teams[turn].name}`), "'s turn: pick a box!");
+}
+function renderAll(bump){ renderScores(bump); renderGrid(); renderTurn(); }
+
+/* ---- Pop-up ---- */
+function openModal(...kids){ const m=$('modal'); m.innerHTML=''; m.append(...kids); $('overlay').classList.add('show'); }
+function closeModal(){ $('overlay').classList.remove('show'); }
+
+function finishBox(i, bump = []){
+  boxes[i].used = true; boxes[i].team = turn;
+  closeModal();
+  turn = (turn + 1) % teams.length;
+  renderAll(bump);
+  if (boxes.every(b => b.used)) setTimeout(showWinner, 600);
+}
+
+function openBox(i){
+  const b = boxes[i];
+  if (b.used) return;
+  const t = teams[turn];
+  const me = turn;
+  if (b.kind === 'q'){
+    const ans = el('div',{class:'m-answer hidden'}, b.a);
+    const showBtn = el('button',{class:'btn light', onclick:()=>{ans.classList.remove('hidden'); showBtn.remove();}}, '👀 Show answer');
+    openModal(
+      el('div',{class:'m-meta'}, `Box ${i+1} · ${b.points} points · ${t.name}`),
+      el('div',{class:'m-emoji'}, b.emoji),
+      el('div',{class:'m-title'}, b.q),
+      ans,
+      el('div',{class:'actions'},
+        showBtn,
+        el('button',{class:'btn good', onclick:()=>{ t.score+=b.points; finishBox(i,[me]); }}, `✓ Correct +${b.points}`),
+        el('button',{class:'btn bad', onclick:()=>finishBox(i)}, '✗ Wrong'))
+    );
+  } else {
+    const others = teams.map((o,k)=>k).filter(k => k !== turn);
+    let actions;
+    if (b.type === 'swap' || b.type === 'steal'){
+      actions = others.map(k => el('button',{class:'btn', style:`background:${COLORS[k]}`, onclick:()=>{
+        if (b.type === 'swap'){ [t.score, teams[k].score] = [teams[k].score, t.score]; }
+        else { const take = Math.min(b.value, teams[k].score); teams[k].score -= take; t.score += take; }
+        finishBox(i,[me,k]);
+      }}, teams[k].name));
+    } else {
+      actions = [el('button',{class:'btn', onclick:()=>{
+        if (b.type === 'double') t.score *= 2;
+        if (b.type === 'zero') t.score = 0;
+        if (b.type === 'bonus') t.score += b.value;
+        finishBox(i,[me]);
+      }}, 'OK')];
+    }
+    openModal(
+      el('div',{class:'m-meta'}, `Box ${i+1} · Surprise! · ${t.name}`),
+      el('div',{class:'m-emoji'}, b.emoji),
+      el('div',{class:'m-title'}, b.title),
+      el('div',{class:'m-text'}, b.text),
+      el('div',{class:'actions'}, actions)
+    );
+  }
+}
+
+function showWinner(){
+  const top = Math.max(...teams.map(t=>t.score));
+  const winners = teams.filter(t => t.score === top);
+  const ranked = [...teams].sort((a,b)=>b.score-a.score);
+  openModal(
+    el('div',{class:'m-emoji'}, '🏆'),
+    el('div',{class:'m-title'}, winners.length>1 ? "It's a tie!" : `${winners[0].name} wins!`),
+    el('ul',{class:'final'}, ranked.map(t => el('li',{}, `${t.name}: ${t.score} points`))),
+    el('div',{class:'actions'},
+      el('button',{class:'btn', onclick:()=>{closeModal();newBoard();}}, '↻ Play again'),
+      el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+  );
+}
+
+/* ---- Wire up ---- */
+document.title = `Mystery Boxes · ${GAME.title} · ${GAME.level} – Anelda Botes`;
+$('gameTitle').textContent = GAME.title;
+$('startBtn').onclick = startGame;
+$('restartBtn').onclick = () => openModal(
+  el('div',{class:'m-emoji'}, '↻'),
+  el('div',{class:'m-title'}, 'Start a new game?'),
+  el('div',{class:'m-text'}, 'All scores will go back to 0 and the boxes will be shuffled.'),
+  el('div',{class:'actions'},
+    el('button',{class:'btn', onclick:()=>{closeModal();newBoard();}}, 'Yes, new game'),
+    el('button',{class:'btn light', onclick:closeModal}, 'Cancel'),
+    el('button',{class:'btn light', onclick:()=>{closeModal();showSetup();}}, 'Change teams'))
+);
+$('fsBtn').onclick = () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+renderSetup();
+</script>
+</body>
+</html>
