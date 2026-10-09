@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spin the Wheel · A1 – Anelda Botes</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#2b2350;
+    --bg1:#fff6dd; --bg2:#ffe3ec;
+    --card:#ffffff;
+    --red:#ff5a5f; --yellow:#ffc233; --teal:#21c4b0; --purple:#7b61ff;
+    --orange:#ff8c42; --blue:#3a86ff; --green:#7bc950; --pink:#ff6fb5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  html{background:linear-gradient(160deg,#fff6dd,#ffe3ec)}
+  body{
+    min-height:100vh; color:var(--ink);
+    font-family:"Fredoka",system-ui,"Segoe UI",sans-serif; font-weight:500;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255,194,51,.35) 0 60px, transparent 61px),
+      radial-gradient(circle at 88% 12%, rgba(33,196,176,.30) 0 44px, transparent 45px),
+      radial-gradient(circle at 92% 85%, rgba(123,97,255,.25) 0 70px, transparent 71px),
+      radial-gradient(circle at 6% 88%, rgba(255,111,181,.28) 0 50px, transparent 51px),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+  }
+  button{font-family:inherit;cursor:pointer;color:inherit}
+  button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+
+  /* Top bar */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px 0}
+  .top h1{margin:0;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:.5px}
+  .top h1 span{color:var(--red)}
+  .nav{display:flex;gap:8px}
+  .nav a{
+    text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;
+    padding:8px 16px;border-radius:999px;background:#fff;border:3px solid var(--ink);
+    box-shadow:0 3px 0 var(--ink);
+  }
+  .nav a:hover{transform:translateY(-1px)}
+
+  /* Layout */
+  .stage{display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:start;padding:16px 20px 28px;max-width:1280px;margin:0 auto}
+  .side{display:flex;flex-direction:column;gap:10px}
+  .side .label{font-size:14px;font-weight:600;opacity:.7;margin:2px 4px}
+  .cat{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:10px 14px;border-radius:18px;border:3px solid var(--ink);
+    background:#fff;font-size:20px;font-weight:600;text-align:left;
+    box-shadow:0 4px 0 var(--ink);transition:transform .12s, box-shadow .12s;
+  }
+  .cat .ic{font-size:26px;width:34px;text-align:center;line-height:1}
+  .cat:hover{transform:translateY(-2px)}
+  .cat:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+  .cat[aria-pressed="true"]{background:var(--c);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+
+  .teacher{margin-top:8px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.7);border:2px dashed rgba(43,35,80,.35)}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:16px;font-weight:600;background:none;border:0;padding:0;width:100%}
+  .track{width:52px;height:30px;border-radius:999px;background:#d7d3e6;position:relative;flex:none;transition:background .2s;border:2px solid var(--ink)}
+  .track::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid var(--ink);transition:left .2s}
+  .switch[aria-checked="true"] .track{background:var(--green)}
+  .switch[aria-checked="true"] .track::after{left:24px}
+  .hint{font-size:13px;opacity:.7;margin:8px 0 0;line-height:1.35}
+
+  /* Wheel */
+  .wheel-area{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .wheel-wrap{position:relative;width:min(72vh,86vw,640px);aspect-ratio:1}
+  .wheel{pointer-events:none;width:100%;height:100%;transition:transform 4.6s cubic-bezier(.12,.62,.08,1);will-change:transform}
+  .wheel svg{width:100%;height:100%;display:block;filter:drop-shadow(0 10px 0 rgba(43,35,80,.18))}
+  .slice{transition:opacity .35s}
+  .wheel.landed .slice{opacity:.3}
+  .wheel.landed .slice.win{opacity:1}
+  .pointer{
+    position:absolute;left:50%;top:-14px;transform:translateX(-50%);
+    width:0;height:0;z-index:2;
+    border-left:28px solid transparent;border-right:28px solid transparent;border-top:52px solid var(--ink);
+    filter:drop-shadow(0 3px 0 rgba(0,0,0,.15));
+  }
+  .pointer::after{
+    content:"";position:absolute;left:-18px;top:-46px;
+    border-left:18px solid transparent;border-right:18px solid transparent;border-top:34px solid var(--yellow);
+  }
+  .hub{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:22%;aspect-ratio:1;border-radius:50%;z-index:2;
+    background:#fff;border:6px solid var(--ink);box-shadow:0 5px 0 var(--ink);
+    font-size:clamp(16px,2.6vw,28px);font-weight:700;letter-spacing:1px;
+  }
+  .hub:active{transform:translate(-50%,-48%);box-shadow:0 2px 0 var(--ink)}
+  .spin-btn{
+    padding:14px 56px;border-radius:999px;border:4px solid var(--ink);
+    background:var(--red);color:#fff;font-size:clamp(26px,3.4vw,38px);font-weight:700;letter-spacing:2px;
+    text-shadow:0 3px 0 rgba(0,0,0,.2);box-shadow:0 6px 0 var(--ink);transition:transform .1s, box-shadow .1s;
+  }
+  .spin-btn:hover{transform:translateY(-2px)}
+  .spin-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+  .spin-btn:disabled,.hub:disabled{opacity:.55;cursor:default;transform:none}
+
+  /* Result pop-up */
+  .result{
+    position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+    background:rgba(43,35,80,.45);padding:20px;
+  }
+  .result.show{display:flex}
+  .result-card{
+    background:#fff;border:6px solid var(--ink);border-radius:36px;box-shadow:0 10px 0 var(--ink);
+    padding:28px 36px 24px;text-align:center;min-width:min(420px,90vw);
+    animation:pop .45s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+  .big{font-size:min(38vh,260px);line-height:1.05;font-weight:700}
+  .big.num{color:var(--blue);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill}
+  .big.let{color:var(--red);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill}
+  .swatch{width:min(42vh,280px);aspect-ratio:1;border-radius:50%;border:8px solid var(--ink);margin:6px auto}
+  .word{font-size:clamp(34px,5vw,56px);font-weight:700;margin:8px 0 4px;min-height:1.2em}
+  .word[hidden]{display:block;visibility:hidden}
+  .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .small-btn{
+    padding:10px 22px;border-radius:999px;border:3px solid var(--ink);background:#fff;
+    font-size:20px;font-weight:600;box-shadow:0 4px 0 var(--ink);
+  }
+  .small-btn.go{background:var(--green);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .small-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+
+  @media (max-width:860px){
+    .stage{grid-template-columns:1fr}
+    .side{flex-direction:row;flex-wrap:wrap;justify-content:center}
+    .side .label{width:100%;text-align:center}
+    .cat{width:auto;font-size:17px;padding:8px 12px}
+    .cat .ic{font-size:22px;width:auto}
+    .teacher{width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .wheel{transition-duration:1.2s}
+    .result-card{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Spin the <span>Wheel!</span></h1>
+  <nav class="nav" aria-label="Site">
+    <a href="../../index.html">Home</a>
+    <a href="../../materials-a1.html">A1 materials</a>
+  </nav>
+</header>
+
+<main class="stage">
+  <aside class="side" aria-label="Choose what goes on the wheel">
+    <div class="label">Choose a topic</div>
+    <div id="cats" style="display:contents"></div>
+    <div class="teacher">
+      <button class="switch" id="wordsSwitch" role="switch" aria-checked="false">
+        Show words on wheel <span class="track" aria-hidden="true"></span>
+      </button>
+      <p class="hint">Tap a topic again for a new mix. Press the space bar to spin.</p>
+    </div>
+  </aside>
+
+  <section class="wheel-area">
+    <div class="wheel-wrap">
+      <div class="pointer" aria-hidden="true"></div>
+      <div class="wheel" id="wheel"><svg id="svg" viewBox="-520 -520 1040 1040" role="img" aria-label="Spinning wheel"></svg></div>
+      <button class="hub" id="hub" aria-label="Spin the wheel">SPIN</button>
+    </div>
+    <button class="spin-btn" id="spinBtn">SPIN!</button>
+  </section>
+</main>
+
+<div class="result" id="result" role="dialog" aria-modal="true" aria-labelledby="resultWord">
+  <div class="result-card">
+    <div id="resultShow"></div>
+    <div class="word" id="resultWord" hidden></div>
+    <div class="result-actions">
+      <button class="small-btn" id="revealBtn">Show word</button>
+      <button class="small-btn go" id="againBtn">Spin again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const SLICES = 8;
+  const FILLS = ["#ff5a5f","#ffc233","#21c4b0","#7b61ff","#ff8c42","#3a86ff","#7bc950","#ff6fb5"];
+
+  const CATEGORIES = [
+    { id:"colours", label:"Colours", icon:"🎨", c:"#ff5a5f", type:"colour", items:[
+      ["red","#e63946"],["blue","#1d6fe0"],["yellow","#ffd60a"],["green","#2bb24c"],
+      ["orange","#ff8c1a"],["purple","#8e44ec"],["pink","#ff70b8"],["brown","#8b5a2b"],
+      ["black","#1b1b1b"],["white","#ffffff"],["grey","#9aa0a6"] ]},
+    { id:"numbers", label:"Numbers", icon:"🔢", c:"#3a86ff", type:"number",
+      items:[1,2,3,4,5,6,7,8,9,10].map(n=>[String(n), ["one","two","three","four","five","six","seven","eight","nine","ten"][n-1]]) },
+    { id:"letters", label:"Letters", icon:"🔤", c:"#ff8c42", type:"letter",
+      items:"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>[l+l.toLowerCase(), l]) },
+    { id:"animals", label:"Animals", icon:"🐶", c:"#21c4b0", type:"pic", items:[
+      ["🐶","dog"],["🐱","cat"],["🐟","fish"],["🐦","bird"],["🐰","rabbit"],["🐮","cow"],["🐷","pig"],["🦁","lion"],
+      ["🐘","elephant"],["🐵","monkey"],["🐸","frog"],["🐻","bear"],["🦒","giraffe"],["🐴","horse"],["🐔","chicken"],["🐢","turtle"] ]},
+    { id:"actions", label:"Actions", icon:"👏", c:"#7b61ff", type:"pic", items:[
+      ["👏","clap"],["👋","wave"],["🏃","run"],["💃","dance"],["🏊","swim"],["😴","sleep"],["🎤","sing"],
+      ["🚴","ride a bike"],["🧗","climb"],["😂","laugh"],["😢","cry"],["📖","read"] ]},
+    { id:"toys", label:"Toys", icon:"🧸", c:"#ff6fb5", type:"pic", items:[
+      ["⚽","ball"],["🧸","teddy bear"],["🚗","car"],["🚂","train"],["🎈","balloon"],["🧩","puzzle"],
+      ["🤖","robot"],["🛴","scooter"],["🥁","drum"],["✈️","plane"],["🎲","dice"],["🎨","paints"] ]},
+    { id:"clothes", label:"Clothes", icon:"👕", c:"#7bc950", type:"pic", items:[
+      ["👕","T-shirt"],["👖","trousers"],["👗","dress"],["🧦","socks"],["👟","shoes"],["🧢","cap"],
+      ["🧣","scarf"],["🧤","gloves"],["🧥","coat"],["👒","hat"],["👢","boots"] ]},
+    { id:"weather", label:"Weather", icon:"🌦️", c:"#ffc233", type:"pic", items:[
+      ["☀️","sunny"],["🌧️","rainy"],["☁️","cloudy"],["❄️","snowy"],["💨","windy"],["⛈️","stormy"],
+      ["🌈","rainbow"],["🥵","hot"],["🥶","cold"] ]},
+  ];
+
+  const $ = id => document.getElementById(id);
+  const svg = $("svg"), wheel = $("wheel"), spinBtn = $("spinBtn"), hub = $("hub");
+  const result = $("result"), resultShow = $("resultShow"), resultWord = $("resultWord");
+  const NS = "http://www.w3.org/2000/svg";
+
+  let current = CATEGORIES[0], items = [], rotation = 0, spinning = false, winner = -1, showWords = false;
+
+  const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const el = (tag, attrs={}, text) => { const e=document.createElementNS(NS,tag); for (const k in attrs) e.setAttribute(k,attrs[k]); if(text!=null) e.textContent=text; return e; };
+
+  function slicePath(i){
+    const R=500, a0=(i*360/SLICES-90)*Math.PI/180, a1=((i+1)*360/SLICES-90)*Math.PI/180;
+    return `M0 0 L${R*Math.cos(a0)} ${R*Math.sin(a0)} A${R} ${R} 0 0 1 ${R*Math.cos(a1)} ${R*Math.sin(a1)} Z`;
+  }
+
+  function draw(){
+    svg.textContent = "";
+    svg.appendChild(el("circle",{cx:0,cy:0,r:512,fill:"#2b2350"}));
+    svg.appendChild(el("circle",{cx:0,cy:0,r:500,fill:"#fff"}));
+    items.forEach((it,i)=>{
+      const g = el("g",{class:"slice","data-i":i});
+      const fill = current.type==="colour" ? it[1] : FILLS[i%FILLS.length];
+      g.appendChild(el("path",{d:slicePath(i),fill,stroke:"#2b2350","stroke-width":8,"stroke-linejoin":"round"}));
+      const mid = i*360/SLICES + 180/SLICES;
+      const content = el("g",{transform:`rotate(${mid}) translate(0 ${showWords && current.type!=="colour" ? -285 : -315})`});
+      if (current.type==="pic"){
+        content.appendChild(el("text",{y:showWords?20:20,"text-anchor":"middle","dominant-baseline":"middle","font-size":showWords?125:150},it[0]));
+      } else if (current.type==="number" || current.type==="letter"){
+        content.appendChild(el("text",{y:15,"text-anchor":"middle","dominant-baseline":"middle",
+          "font-size":(current.type==="number"?170:140)*(showWords?0.85:1),"font-weight":700,fill:"#fff",stroke:"#2b2350","stroke-width":14,
+          "paint-order":"stroke","font-family":"Fredoka, system-ui, sans-serif"},it[0]));
+      }
+      if (showWords){
+        const word = current.type==="colour" ? it[0] : it[1];
+        const dark = current.type==="colour" && ["white","yellow","pink","grey","orange"].includes(it[0]);
+        content.appendChild(el("text",{y:current.type==="colour"?20:-125,"text-anchor":"middle","dominant-baseline":"middle",
+          "font-size":current.type==="colour"?64:46,"font-weight":700,"font-family":"Fredoka, system-ui, sans-serif",
+          fill:dark?"#2b2350":"#fff",stroke:dark?"none":"#2b2350","stroke-width":10,"paint-order":"stroke"},word));
+      }
+      g.appendChild(content);
+      svg.appendChild(g);
+    });
+    svg.appendChild(el("circle",{cx:0,cy:0,r:500,fill:"none",stroke:"#2b2350","stroke-width":14}));
+    // little dots around the rim
+    for (let i=0;i<SLICES*2;i++){
+      const a=(i*360/(SLICES*2)-90)*Math.PI/180;
+      svg.appendChild(el("circle",{cx:478*Math.cos(a),cy:478*Math.sin(a),r:9,fill:"#fff",stroke:"#2b2350","stroke-width":4}));
+    }
+  }
+
+  function chooseCategory(cat){
+    current = cat;
+    const pool = cat.items;
+    items = shuffle(pool).slice(0,SLICES);
+    while (items.length < SLICES) items.push(...shuffle(pool).slice(0,SLICES-items.length));
+    wheel.classList.remove("landed");
+    document.querySelectorAll(".cat").forEach(b=>b.setAttribute("aria-pressed", b.dataset.id===cat.id ? "true":"false"));
+    draw();
+  }
+
+  function spin(){
+    if (spinning) return;
+    hideResult();
+    spinning = true; spinBtn.disabled = hub.disabled = true;
+    wheel.classList.remove("landed");
+    winner = Math.floor(Math.random()*SLICES);
+    const sliceDeg = 360/SLICES;
+    const mid = winner*sliceDeg + sliceDeg/2;
+    const jitter = (Math.random()-.5)*sliceDeg*0.6;
+    const base = rotation - (((rotation % 360)+360)%360);         // full turns so far
+    const target = (360 - mid + jitter + 360) % 360;               // where the wheel must stop
+    rotation = base + 360*(5 + Math.floor(Math.random()*3)) + target;
+    wheel.style.transform = `rotate(${rotation}deg)`;
+    // Backup in case the browser never reports the end of the animation
+    const ms = parseFloat(getComputedStyle(wheel).transitionDuration) * 1000 || 4600;
+    const id = ++spinId;
+    clearTimeout(fallback);
+    fallback = setTimeout(() => finish(id), ms + 250);
+  }
+
+  let spinId = 0, fallback = null;
+  wheel.addEventListener("transitionend", e => { if (e.propertyName === "transform") finish(spinId); });
+
+  function finish(id){
+    if (!spinning || id !== spinId) return;
+    clearTimeout(fallback);
+    spinning = false; spinBtn.disabled = hub.disabled = false;
+    wheel.classList.add("landed");
+    svg.querySelectorAll(".slice").forEach(s=>s.classList.toggle("win", Number(s.dataset.i)===winner));
+    showResult(items[winner]);
+  }
+
+  function showResult(it){
+    resultShow.textContent = "";
+    let word;
+    if (current.type==="colour"){
+      const s=document.createElement("div"); s.className="swatch"; s.style.background=it[1]; resultShow.appendChild(s); word=it[0];
+    } else {
+      const d=document.createElement("div");
+      d.className = "big" + (current.type==="number"?" num":current.type==="letter"?" let":"");
+      d.textContent = it[0]; resultShow.appendChild(d);
+      word = it[1];
+    }
+    resultWord.textContent = word;
+    resultWord.hidden = !showWords;
+    $("revealBtn").style.display = showWords ? "none" : "";
+    result.classList.add("show");
+    $("againBtn").focus();
+  }
+  function hideResult(){ result.classList.remove("show"); }
+
+  // Build category buttons
+  const cats = $("cats");
+  CATEGORIES.forEach(cat=>{
+    const b=document.createElement("button");
+    b.className="cat"; b.dataset.id=cat.id; b.style.setProperty("--c",cat.c);
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML=`<span class="ic" aria-hidden="true">${cat.icon}</span><span>${cat.label}</span>`;
+    b.addEventListener("click",()=>{ if(!spinning){ hideResult(); chooseCategory(cat);} });
+    cats.appendChild(b);
+  });
+
+  $("wordsSwitch").addEventListener("click",e=>{
+    showWords = !showWords;
+    e.currentTarget.setAttribute("aria-checked", showWords);
+    draw();
+    if (winner>=0 && wheel.classList.contains("landed"))
+      svg.querySelectorAll(".slice").forEach(s=>s.classList.toggle("win", Number(s.dataset.i)===winner));
+  });
+  spinBtn.addEventListener("click",spin);
+  hub.addEventListener("click",spin);
+  $("againBtn").addEventListener("click",spin);
+  $("revealBtn").addEventListener("click",()=>{ resultWord.hidden=false; $("revealBtn").style.display="none"; });
+  result.addEventListener("click",e=>{ if(e.target===result) hideResult(); });
+  document.addEventListener("keydown",e=>{
+    if (e.code==="Space" && !e.repeat && !(e.target instanceof HTMLButtonElement && e.target!==$("againBtn"))){ e.preventDefault(); spin(); }
+    if (e.key==="Escape") hideResult();
+  });
+
+  chooseCategory(CATEGORIES[0]);
+})();
+</script>
+</body>
+</html>
