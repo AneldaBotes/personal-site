@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Teacher Toolbox – Anelda Botes</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#2b2350;
+    --red:#ff5a5f; --yellow:#ffc233; --teal:#21c4b0; --purple:#7b61ff;
+    --orange:#ff8c42; --blue:#3a86ff; --green:#7bc950; --pink:#ff6fb5;
+  }
+  *{box-sizing:border-box}
+  html{background:linear-gradient(160deg,#fff6dd,#ffe3ec)}
+  html,body{margin:0}
+  body{
+    min-height:100vh;color:var(--ink);
+    font-family:"Fredoka",system-ui,"Segoe UI",sans-serif;font-weight:500;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,194,51,.32) 0 60px, transparent 61px),
+      radial-gradient(circle at 90% 14%, rgba(33,196,176,.28) 0 44px, transparent 45px),
+      radial-gradient(circle at 94% 88%, rgba(123,97,255,.22) 0 70px, transparent 71px),
+      radial-gradient(circle at 5% 90%, rgba(255,111,181,.26) 0 50px, transparent 51px);
+  }
+  button,input,textarea{font-family:inherit;color:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible,textarea:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+  [hidden]{display:none!important}
+
+  /* chunky shared look */
+  .chunk{border:3px solid var(--ink);border-radius:18px;background:#fff;box-shadow:0 4px 0 var(--ink)}
+  .btn{
+    border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:0 4px 0 var(--ink);
+    font-size:20px;font-weight:600;padding:10px 22px;transition:transform .1s, box-shadow .1s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+  .btn.go{background:var(--green);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .btn.stop{background:var(--red);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .btn.big{font-size:clamp(24px,3vw,34px);padding:12px 44px;letter-spacing:1px}
+  .btn.small{font-size:16px;padding:6px 14px;box-shadow:0 3px 0 var(--ink)}
+  .btn.on{background:var(--yellow)}
+  .btn:disabled{opacity:.5;cursor:default;transform:none}
+
+  /* top bar */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px 0;max-width:1280px;margin:0 auto}
+  .top h1{margin:0;font-size:clamp(26px,3.6vw,40px);font-weight:700}
+  .top h1 span{color:var(--purple)}
+  .nav a{
+    text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;
+    padding:8px 16px;border-radius:999px;background:#fff;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);
+  }
+
+  /* tabs */
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:16px 20px 6px}
+  .tab{
+    display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:999px;
+    border:3px solid var(--ink);background:#fff;box-shadow:0 4px 0 var(--ink);
+    font-size:20px;font-weight:600;transition:transform .1s;
+  }
+  .tab .ic{font-size:24px;line-height:1}
+  .tab:hover{transform:translateY(-2px)}
+  .tab[aria-selected="true"]{background:var(--c);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+
+  main{max-width:1180px;margin:0 auto;padding:14px 20px 32px}
+  .panel{display:flex;flex-direction:column;align-items:center;gap:18px}
+
+  /* ---------- TIMER ---------- */
+  .presets{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .ring-wrap{position:relative;width:min(50vh,82vw,440px);aspect-ratio:1}
+  .ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring-bg{fill:#fff;stroke:var(--ink);stroke-width:14}
+  .ring{fill:none;stroke:var(--teal);stroke-width:30;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+  .time{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:min(13vh,20vw,112px);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:2px;
+  }
+  .ring-wrap.low .ring{stroke:var(--orange)}
+  .ring-wrap.done .ring{stroke:var(--red)}
+  .ring-wrap.done .time{animation:flash .6s steps(2) infinite;color:var(--red)}
+  @keyframes flash{50%{opacity:.25}}
+  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .tiny-note{font-size:15px;opacity:.7}
+
+  /* ---------- NAME PICKER ---------- */
+  .picker{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:22px;width:100%;align-items:start}
+  .names-box{padding:14px}
+  .names-box label{display:block;font-weight:600;font-size:18px;margin-bottom:8px}
+  .names-box textarea{
+    width:100%;min-height:300px;resize:vertical;border:2px solid #cfc8e8;border-radius:12px;padding:10px 12px;
+    font-size:18px;line-height:1.4;background:#fffdf7;
+  }
+  .names-box .tiny-note{margin:8px 0 0}
+  .check{display:flex;align-items:center;gap:10px;font-size:17px;margin-top:12px;cursor:pointer}
+  .check input{width:22px;height:22px;accent-color:var(--purple)}
+  .stage-card{
+    min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;
+    text-align:center;
+  }
+  .picked{
+    font-size:clamp(48px,9vw,120px);font-weight:700;line-height:1.05;word-break:break-word;min-height:1.1em;
+    color:var(--purple);
+  }
+  .picked.rolling{color:#b9b0d9}
+  .picked.final{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+  .left{font-size:18px;opacity:.75}
+
+  /* ---------- SCOREBOARD ---------- */
+  .teams{display:grid;gap:16px;width:100%;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .team{padding:14px 14px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;border-top:14px solid var(--tc)}
+  .team input{
+    width:100%;text-align:center;font-size:24px;font-weight:600;border:none;border-bottom:2px dashed #cfc8e8;
+    background:transparent;padding:4px;
+  }
+  .score{font-size:clamp(64px,9vw,110px);font-weight:700;line-height:1;color:var(--tc);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+  .score.bump{animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+  .pm{display:flex;gap:10px}
+  .pm button{width:64px;height:64px;border-radius:50%;font-size:34px;font-weight:700;padding:0;line-height:1}
+  .pm .plus{background:var(--tc);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .crown{position:absolute;top:-34px;font-size:40px;display:none}
+  .team.lead .crown{display:block}
+  .count-pick{display:flex;gap:8px;align-items:center;font-size:18px;font-weight:600}
+  .count-pick button{width:48px;height:48px;padding:0;border-radius:14px;font-size:22px}
+
+  /* ---------- NAME GENERATOR ---------- */
+  .gen-card{width:min(680px,100%);padding:30px 24px;text-align:center;display:flex;flex-direction:column;gap:20px;align-items:center}
+  .gen-name{font-size:clamp(64px,12vw,150px);font-weight:700;line-height:1;color:var(--pink);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;min-height:1em}
+  .gen-name.final{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+  .history{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:680px}
+  .chip{padding:6px 14px;border-radius:999px;background:#fff;border:2px solid var(--ink);font-size:18px}
+  .hist-label{font-size:16px;opacity:.7}
+
+  @media (max-width:760px){
+    .picker{grid-template-columns:1fr}
+    .names-box textarea{min-height:160px}
+    .tab{font-size:17px;padding:8px 14px}
+  }
+  @media (prefers-reduced-motion:reduce){ .picked.final,.gen-name.final,.score.bump{animation:none} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Teacher <span>Toolbox</span></h1>
+  <nav class="nav" aria-label="Site"><a href="index.html">Home</a> <a href="materials.html">Materials</a></nav>
+</header>
+
+<div class="tabs" role="tablist" aria-label="Tools">
+  <button class="tab" role="tab" id="t-timer"  aria-controls="p-timer"  style="--c:var(--teal)"><span class="ic" aria-hidden="true">⏱️</span>Timer</button>
+  <button class="tab" role="tab" id="t-picker" aria-controls="p-picker" style="--c:var(--purple)"><span class="ic" aria-hidden="true">🎯</span>Name picker</button>
+  <button class="tab" role="tab" id="t-score"  aria-controls="p-score"  style="--c:var(--orange)"><span class="ic" aria-hidden="true">🏆</span>Scoreboard</button>
+  <button class="tab" role="tab" id="t-gen"    aria-controls="p-gen"    style="--c:var(--pink)"><span class="ic" aria-hidden="true">✨</span>English names</button>
+</div>
+
+<main>
+  <!-- TIMER -->
+  <section class="panel" id="p-timer" role="tabpanel" aria-labelledby="t-timer">
+    <div class="presets" id="presets"></div>
+    <div class="ring-wrap" id="ringWrap">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="ring-bg" cx="100" cy="100" r="92"/>
+        <circle class="ring" id="ring" cx="100" cy="100" r="78"/>
+      </svg>
+      <div class="time" id="time" role="timer" aria-live="off">2:00</div>
+    </div>
+    <div class="row">
+      <button class="btn small" id="resetBtn">Reset</button>
+      <button class="btn small" id="minus">− 1 min</button>
+      <button class="btn big go" id="startBtn">START</button>
+      <button class="btn small" id="plus">+ 1 min</button>
+      <button class="btn small on" id="soundBtn" aria-pressed="true">🔔 Sound on</button>
+    </div>
+  </section>
+
+  <!-- NAME PICKER -->
+  <section class="panel" id="p-picker" role="tabpanel" aria-labelledby="t-picker" hidden>
+    <div class="picker">
+      <div class="names-box chunk">
+        <label for="names">Class names</label>
+        <textarea id="names" placeholder="Type or paste names here,&#10;one per line&#10;(or separated by commas)"></textarea>
+        <label class="check"><input type="checkbox" id="noRepeat" checked> Everyone gets a turn before repeats</label>
+        <p class="tiny-note">Names are not saved. They disappear when you close the page.</p>
+      </div>
+      <div class="stage-card chunk">
+        <div class="picked" id="picked" aria-live="polite">Who's next?</div>
+        <button class="btn big go" id="pickBtn">PICK!</button>
+        <div class="left" id="left"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCOREBOARD -->
+  <section class="panel" id="p-score" role="tabpanel" aria-labelledby="t-score" hidden>
+    <div class="row">
+      <div class="count-pick">Teams:
+        <button class="btn" data-n="-1" id="fewer" aria-label="Fewer teams">−</button>
+        <span id="teamCount">2</span>
+        <button class="btn" data-n="1" id="more" aria-label="More teams">+</button>
+      </div>
+      <button class="btn small" id="resetScores">Reset scores</button>
+    </div>
+    <div class="teams" id="teams"></div>
+    <p class="tiny-note">Tap a team name to change it.</p>
+  </section>
+
+  <!-- NAME GENERATOR -->
+  <section class="panel" id="p-gen" role="tabpanel" aria-labelledby="t-gen" hidden>
+    <div class="row" role="group" aria-label="Type of name">
+      <button class="btn" data-g="girl">👧 Girl</button>
+      <button class="btn" data-g="boy">👦 Boy</button>
+      <button class="btn on" data-g="any">🌟 Any</button>
+    </div>
+    <div class="gen-card chunk">
+      <div class="gen-name" id="genName" aria-live="polite">?</div>
+      <button class="btn big go" id="genBtn">NEW NAME</button>
+    </div>
+    <div class="hist-label" id="histLabel" hidden>Names so far (to write down):</div>
+    <div class="history" id="history"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+
+  /* ---------- tabs ---------- */
+  const tabs = [...document.querySelectorAll(".tab")];
+  function showTab(tab){
+    tabs.forEach(t=>{
+      const on = t===tab;
+      t.setAttribute("aria-selected", on);
+      t.tabIndex = on ? 0 : -1;
+      $(t.getAttribute("aria-controls")).hidden = !on;
+    });
+  }
+  tabs.forEach(t=>t.addEventListener("click",()=>showTab(t)));
+  document.querySelector(".tabs").addEventListener("keydown",e=>{
+    const i = tabs.indexOf(document.activeElement); if (i<0) return;
+    if (e.key==="ArrowRight"||e.key==="ArrowLeft"){
+      const n = tabs[(i + (e.key==="ArrowRight"?1:-1) + tabs.length) % tabs.length]; n.focus(); showTab(n);
+    }
+  });
+  showTab(tabs[0]);
+
+  /* ---------- sound (gentle chime, no files needed) ---------- */
+  let audio, soundOn = true;
+  function chime(){
+    if (!soundOn) return;
+    try{
+      audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+      const now = audio.currentTime;
+      [0,0.35,0.7].forEach((t,k)=>{
+        [523.25, 659.25, 783.99].forEach((f,i)=>{
+          const o=audio.createOscillator(), g=audio.createGain();
+          o.type="sine"; o.frequency.value=f*(k===2?2:1);
+          g.gain.setValueAtTime(0.0001, now+t+i*0.08);
+          g.gain.exponentialRampToValueAtTime(0.18, now+t+i*0.08+0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now+t+i*0.08+0.6);
+          o.connect(g).connect(audio.destination); o.start(now+t+i*0.08); o.stop(now+t+i*0.08+0.65);
+        });
+      });
+    }catch(e){}
+  }
+
+  /* ---------- TIMER ---------- */
+  const PRESETS = [[30,"30 sec"],[60,"1 min"],[120,"2 min"],[180,"3 min"],[300,"5 min"],[600,"10 min"]];
+  const ring = $("ring"), C = 2*Math.PI*78;
+  ring.style.strokeDasharray = C;
+  let total = 120, remaining = 120, endAt = 0, ticking = null;
+
+  const fmt = s => { s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
+  function render(){
+    $("time").textContent = fmt(remaining);
+    ring.style.strokeDashoffset = C * (1 - (total ? remaining/total : 0));
+    $("ringWrap").classList.toggle("low", remaining>0 && remaining<=10 && total>10);
+    document.title = ticking ? fmt(remaining)+" · Teacher Toolbox" : "Teacher Toolbox – Anelda Botes";
+  }
+  function setTime(s){ stop(); total = remaining = Math.max(10, Math.min(s, 99*60)); $("ringWrap").classList.remove("done"); render(); }
+  function start(){
+    if (remaining<=0) setTime(total);
+    $("ringWrap").classList.remove("done");
+    endAt = Date.now() + remaining*1000;
+    ticking = setInterval(()=>{
+      remaining = (endAt - Date.now())/1000;
+      if (remaining<=0){ remaining=0; stop(); $("ringWrap").classList.add("done"); chime(); }
+      render();
+    }, 200);
+    $("startBtn").textContent="PAUSE"; $("startBtn").classList.replace("go","stop");
+    render();
+  }
+  function stop(){
+    clearInterval(ticking); ticking=null;
+    $("startBtn").textContent="START"; $("startBtn").classList.replace("stop","go");
+    render();
+  }
+  PRESETS.forEach(([s,l])=>{
+    const b=document.createElement("button"); b.className="btn small"; b.textContent=l;
+    b.addEventListener("click",()=>setTime(s)); $("presets").appendChild(b);
+  });
+  $("startBtn").addEventListener("click",()=> ticking ? stop() : start());
+  $("resetBtn").addEventListener("click",()=>setTime(total));
+  $("plus").addEventListener("click",()=>{ const run=!!ticking; const r=remaining; stop(); total=Math.min(total+60,99*60); remaining=Math.min(r+60,99*60); if(remaining>total) total=remaining; $("ringWrap").classList.remove("done"); render(); if(run) start(); });
+  $("minus").addEventListener("click",()=>{ const run=!!ticking; const r=remaining; stop(); remaining=Math.max(r-60,0); if(remaining===0){ setTime(Math.max(total-60,10)); return;} if(total-60>=remaining) total-=60; render(); if(run) start(); });
+  $("soundBtn").addEventListener("click",e=>{
+    soundOn=!soundOn; const b=e.currentTarget;
+    b.setAttribute("aria-pressed",soundOn); b.classList.toggle("on",soundOn);
+    b.textContent = soundOn ? "🔔 Sound on" : "🔕 Sound off";
+    if (soundOn) chime();
+  });
+  render();
+
+  /* ---------- NAME PICKER ---------- */
+  let bag = [], lastList = "";
+  const getNames = () => $("names").value.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);
+  function updateLeft(){
+    const n = getNames();
+    if (!n.length){ $("left").textContent = "Add names on the left to start."; return; }
+    if ($("noRepeat").checked) { syncBag(n); $("left").textContent = `${bag.length} of ${n.length} still to go`; }
+    else $("left").textContent = `${n.length} names`;
+  }
+  function syncBag(n){
+    const key = n.join("\u0001");
+    if (key !== lastList){ bag = shuffle(n); lastList = key; }
+    if (!bag.length) bag = shuffle(n);
+  }
+  let rolling = false;
+  $("pickBtn").addEventListener("click",()=>{
+    if (rolling) return;
+    const n = getNames(); const el = $("picked");
+    if (!n.length){ el.textContent="Add names first!"; el.className="picked"; $("names").focus(); return; }
+    let chosen;
+    if ($("noRepeat").checked){ syncBag(n); chosen = bag.pop(); }
+    else chosen = pick(n);
+    rolling = true; $("pickBtn").disabled = true;
+    el.className = "picked rolling";
+    let k = 0; const steps = Math.min(16, 6 + n.length);
+    (function roll(){
+      if (k < steps){ el.textContent = pick(n); k++; setTimeout(roll, 50 + k*12); return; }
+      el.textContent = chosen; el.className = "picked final";
+      rolling = false; $("pickBtn").disabled = false; updateLeft();
+    })();
+  });
+  $("names").addEventListener("input",updateLeft);
+  $("noRepeat").addEventListener("change",()=>{ lastList=""; updateLeft(); });
+  updateLeft();
+
+  /* ---------- SCOREBOARD ---------- */
+  const TEAM_DEFAULTS = [["Red","#ff5a5f"],["Blue","#3a86ff"],["Green","#7bc950"],["Yellow","#ffc233"],["Purple","#7b61ff"],["Pink","#ff6fb5"]];
+  const teams = TEAM_DEFAULTS.map(([name,c])=>({name:name+" Team",c,score:0}));
+  let teamN = 2;
+  function drawTeams(){
+    const wrap = $("teams"); wrap.textContent = "";
+    const shown = teams.slice(0,teamN);
+    const best = Math.max(...shown.map(t=>t.score));
+    shown.forEach((t,i)=>{
+      const d=document.createElement("div");
+      d.className = "team chunk" + (best>0 && t.score===best ? " lead" : "");
+      d.style.setProperty("--tc",t.c);
+      d.innerHTML = `<span class="crown" aria-hidden="true">👑</span>
+        <input aria-label="Team name" value="">
+        <div class="score" aria-live="polite">${t.score}</div>
+        <div class="pm"><button class="btn minus" aria-label="Take a point from ${t.name}">−</button><button class="btn plus" aria-label="Give a point to ${t.name}">+</button></div>`;
+      const inp = d.querySelector("input"); inp.value = t.name;
+      inp.addEventListener("input",()=>{ t.name = inp.value; });
+      d.querySelector(".plus").addEventListener("click",()=>{ t.score++; drawTeams(); bump(i); });
+      d.querySelector(".minus").addEventListener("click",()=>{ t.score=Math.max(0,t.score-1); drawTeams(); });
+      wrap.appendChild(d);
+    });
+    $("teamCount").textContent = teamN;
+    $("fewer").disabled = teamN<=2; $("more").disabled = teamN>=6;
+  }
+  function bump(i){ const s=$("teams").children[i]?.querySelector(".score"); if(s){ s.classList.add("bump"); } }
+  $("fewer").addEventListener("click",()=>{ teamN=Math.max(2,teamN-1); drawTeams(); });
+  $("more").addEventListener("click",()=>{ teamN=Math.min(6,teamN+1); drawTeams(); });
+  $("resetScores").addEventListener("click",()=>{ teams.forEach(t=>t.score=0); drawTeams(); });
+  drawTeams();
+
+  /* ---------- ENGLISH NAME GENERATOR ---------- */
+  // Short, friendly names that are easy to say and spell
+  const GIRLS = ["Amy","Anna","Bella","Chloe","Daisy","Ella","Emma","Eva","Grace","Hannah","Ivy","Jenny","Julia","Kate","Lily","Lucy","Mia","Molly","Nina","Olivia","Rosie","Ruby","Sara","Sophie","Tina","Zoe","Alice","Ellie","Holly","Jade","Lola","Maya","Poppy","Sally","Stella","Wendy"];
+  const BOYS  = ["Adam","Alex","Ben","Billy","Charlie","Dan","David","Eddie","Finn","Harry","Henry","Jack","Jake","James","Joe","Kevin","Leo","Liam","Luke","Max","Mike","Noah","Oliver","Peter","Ryan","Sam","Tom","Toby","Zack","Andy","Bobby","Danny","Freddie","Louis","Oscar","Teddy"];
+  let gender = "any"; const used = new Set();
+  document.querySelectorAll("[data-g]").forEach(b=>b.addEventListener("click",()=>{
+    gender=b.dataset.g;
+    document.querySelectorAll("[data-g]").forEach(x=>x.classList.toggle("on",x===b));
+  }));
+  $("genBtn").addEventListener("click",()=>{
+    const pool = gender==="girl"?GIRLS:gender==="boy"?BOYS:GIRLS.concat(BOYS);
+    let fresh = pool.filter(n=>!used.has(n));
+    if (!fresh.length){ pool.forEach(n=>used.delete(n)); fresh = pool.slice(); }
+    const name = pick(fresh); used.add(name);
+    const el=$("genName"); el.classList.remove("final"); void el.offsetWidth;
+    el.textContent=name; el.classList.add("final");
+    const chip=document.createElement("span"); chip.className="chip"; chip.textContent=name;
+    $("history").prepend(chip); $("histLabel").hidden=false;
+  });
+
+  /* keyboard: space = main action on the open tool (when not typing) */
+  document.addEventListener("keydown",e=>{
+    if (e.code!=="Space" || e.repeat) return;
+    const t=e.target; if (t.tagName==="TEXTAREA"||t.tagName==="INPUT"||t.tagName==="BUTTON") return;
+    const open = tabs.find(x=>x.getAttribute("aria-selected")==="true").id;
+    const map = {"t-timer":"startBtn","t-picker":"pickBtn","t-gen":"genBtn"};
+    if (map[open]){ e.preventDefault(); $(map[open]).click(); }
+  });
+})();
+</script>
+</body>
+</html>
