@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Often?</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1d1d1f; --muted:#6b6b70; --line:#e4e2dd;
+  --accent:#2f5bea; --accent-soft:#e9eefe; --accent2:#0e8f80; --accent2-soft:#ddf4f0; --track:#e7e5e0; --tipbg:#1d1d1f; --tipink:#ffffff;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141416; --card:#1d1d20; --ink:#f2f2f3; --muted:#a0a0a8; --line:#2e2e33;
+    --accent:#7c9bff; --accent-soft:#232a44; --accent2:#4fd1bf; --accent2-soft:#163330; --track:#2c2c31; --tipbg:#f2f2f3; --tipink:#141416;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141416; --card:#1d1d20; --ink:#f2f2f3; --muted:#a0a0a8; --line:#2e2e33;
+  --accent:#7c9bff; --accent-soft:#232a44; --accent2:#4fd1bf; --accent2-soft:#163330; --track:#2c2c31; --tipbg:#f2f2f3; --tipink:#141416;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{overflow-x:clip}
+body{
+  background:var(--bg); color:var(--ink); min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px; margin:0 auto; padding:24px 16px 48px}
+.top{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
+a.back{text-decoration:none; color:var(--muted); font-weight:600; font-size:.9rem; padding:8px 10px; border-radius:10px; margin-left:-10px}
+a.back:hover{background:var(--accent-soft); color:var(--ink)}
+.title{position:relative; display:flex; align-items:center; gap:12px; margin:0 0 20px}
+h1{font-size:clamp(2rem,5vw,3rem); letter-spacing:-.02em; margin:0; line-height:1.1}
+
+button{
+  font:inherit; font-weight:600; cursor:pointer; border-radius:12px; padding:10px 16px;
+  border:1px solid var(--line); background:var(--card); color:var(--ink);
+  transition:transform .08s ease, background .15s ease, color .15s;
+}
+button:hover{background:var(--accent-soft)}
+button:active{transform:translateY(1px)}
+.ghost{background:transparent; border-color:transparent; color:var(--muted); padding:8px 12px}
+.ghost:hover{color:var(--ink)}
+.ghost[aria-pressed="true"]{color:var(--accent); background:var(--accent-soft)}
+
+/* hover tips */
+[data-tip]{position:relative}
+[data-tip]::after{
+  content:attr(data-tip); position:absolute; left:50%; bottom:calc(100% + 10px); transform:translate(-50%,4px);
+  background:var(--tipbg); color:var(--tipink); font-size:.85rem; font-weight:500; line-height:1.35; letter-spacing:0;
+  padding:7px 11px; border-radius:9px; white-space:pre; text-align:center; pointer-events:none;
+  opacity:0; transition:opacity .15s, transform .15s; z-index:20;
+}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1; transform:translate(-50%,0)}
+[data-tip=""]::after{display:none}
+.tip-below::after{bottom:auto; top:calc(100% + 10px)}
+
+/* info popover */
+.info{position:static}
+.info-btn{width:32px; height:32px; padding:0; border-radius:50%; font-size:.95rem; color:var(--muted); background:var(--card)}
+.pop{
+  position:absolute; top:calc(100% + 6px); left:0; width:min(360px,100%); z-index:30;
+  background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow);
+  padding:16px 18px; font-size:.95rem; color:var(--ink);
+  opacity:0; visibility:hidden; transform:translateY(4px); transition:opacity .15s, transform .15s, visibility .15s;
+}
+.info:hover .pop,.info:focus-within .pop{opacity:1; visibility:visible; transform:none}
+.pop h3{margin:0 0 4px; font-size:.75rem; letter-spacing:.07em; text-transform:uppercase; color:var(--muted)}
+.pop p{margin:0 0 12px}
+.pop p:last-child{margin:0}
+.pop b{color:var(--accent)}
+kbd{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.8em; padding:0 5px; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; color:var(--muted); background:var(--bg)}
+
+.expr{--accent:var(--accent2); --accent-soft:var(--accent2-soft)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:24px}
+
+/* header row: mode + question nav */
+.head{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px}
+.seg{display:inline-flex; padding:4px; background:var(--bg); border:1px solid var(--line); border-radius:12px}
+.seg button{border:0; background:transparent; color:var(--muted); padding:8px 14px; border-radius:9px}
+.seg button[aria-pressed="true"]{background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.nav{display:flex; align-items:center; gap:4px; color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums}
+.nav button{padding:8px 12px}
+
+.question{font-size:clamp(1.4rem,3.6vw,2.2rem); font-weight:700; letter-spacing:-.01em; margin:0 0 18px}
+
+/* big word */
+.display{text-align:center; margin:10px 0 34px}
+.word{
+  display:inline-block; font-size:clamp(3rem,11vw,6.5rem); font-weight:800; letter-spacing:-.03em; line-height:1.05;
+  color:var(--accent); cursor:pointer; user-select:none; border-radius:16px; padding:0 10px;
+}
+.expr .word{font-size:clamp(2.2rem,8vw,5rem)}
+.word::after{white-space:pre; font-size:.95rem}
+
+/* slider */
+.slider{position:relative; padding:18px 14px 92px; touch-action:none}
+.track{position:relative; height:16px; border-radius:999px; background:var(--track); cursor:pointer}
+.fill{position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:var(--accent); transition:width .22s ease}
+.tick{position:absolute; top:50%; width:4px; height:26px; margin-left:-2px; transform:translateY(-50%); border-radius:2px; background:var(--line)}
+.thumb{
+  position:absolute; top:50%; width:40px; height:40px; margin-left:-20px; transform:translateY(-50%);
+  border-radius:50%; background:var(--card); border:4px solid var(--accent); box-shadow:0 2px 10px rgba(0,0,0,.18);
+  transition:left .22s ease; cursor:grab; outline:none; z-index:2;
+}
+.thumb:focus-visible{box-shadow:0 0 0 5px var(--accent-soft),0 2px 10px rgba(0,0,0,.18)}
+.dragging .thumb{cursor:grabbing; transition:none}
+.dragging .fill{transition:none}
+.labels{position:absolute; left:14px; right:14px; top:46px; z-index:3}
+.lab{
+  position:absolute; transform:translateX(-50%); white-space:nowrap; font-weight:600;
+  font-size:clamp(.85rem,1.7vw,1.02rem); color:var(--muted); background:none; border:0; padding:4px 6px; border-radius:8px;
+}
+.lab:hover{background:var(--accent-soft); color:var(--ink)}
+.lab.low{top:30px}
+.lab.on{color:var(--accent)}
+.lab[data-tip]::after{transform:translate(-50%,4px)}
+.lab[data-tip]:hover::after{transform:translate(-50%,0)}
+/* keep edge tips on screen */
+.lab.first::after{left:0; transform:translate(-6px,4px)}
+.lab.first:hover::after{transform:translate(-6px,0)}
+.lab.last::after{left:auto; right:0; transform:translate(6px,4px)}
+.lab.last:hover::after{transform:translate(6px,0)}
+
+/* answer */
+.answer{
+  padding:20px; border-radius:16px; background:var(--bg); border:1px solid var(--line);
+  font-size:clamp(1.3rem,3.4vw,2rem); text-align:center; font-weight:600;
+}
+.answer .adv{color:var(--accent); font-weight:800; border-bottom:3px solid var(--accent); padding:0 2px; cursor:help}
+.answer .adv::after{font-size:.85rem}
+
+.foot{display:flex; justify-content:center; gap:4px; flex-wrap:wrap; margin-top:14px}
+
+@media (max-width:640px){
+  .card{padding:20px 14px}
+  .slider{padding-left:22px; padding-right:22px}
+  .labels{left:22px; right:22px}
+  .expr .lab:not(.on){display:none}
+  .expr .lab.on{top:0}
+  .expr .slider{padding-bottom:52px}
+  .head{flex-direction:column; align-items:stretch}
+  .seg{align-self:flex-start}
+  .nav{justify-content:space-between}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../../materials-a2.html">← A2 materials</a>
+  </div>
+
+  <div class="title">
+    <h1>How Often?</h1>
+    <div class="info">
+      <button class="info-btn" aria-label="How to use">i</button>
+      <div class="pop" role="tooltip">
+        <h3>How to use</h3>
+        <p>Read the question. Move the slider to answer. The answer sentence changes too.</p>
+        <h3>Word order</h3>
+        <p>Adverbs go <b>before</b> the main verb: I <b>usually</b> work late.<br>
+           But <b>after</b> am / is / are: I am <b>never</b> late.<br>
+           Expressions go at the <b>end</b>: I work late <b>once a week</b>.</p>
+        <h3>Keys</h3>
+        <p><kbd>←</kbd> <kbd>→</kbd> move · <kbd>N</kbd> next question · <kbd>H</kbd> hide the word · <kbd>M</kbd> switch mode</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="head">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="modeAdv" aria-pressed="true">Adverbs</button>
+        <button id="modeExp" aria-pressed="false">Expressions</button>
+      </div>
+      <div class="nav">
+        <button class="ghost" id="prevQ" aria-label="Previous question">←</button>
+        <span><span id="qnum">1</span> / <span id="qtotal">16</span></span>
+        <button class="ghost" id="nextQ" aria-label="Next question">→</button>
+      </div>
+    </div>
+
+    <p class="question" id="question"></p>
+
+    <div class="display">
+      <span class="word tip-below" id="word" tabindex="0" data-tip=""></span>
+    </div>
+
+    <div class="slider" id="slider">
+      <div class="track" id="track">
+        <div class="fill" id="fill"></div>
+        <div id="ticks"></div>
+        <div class="thumb" id="thumb" tabindex="0" role="slider" aria-label="How often" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      <div class="labels" id="labels"></div>
+    </div>
+
+    <div class="answer" id="answer"></div>
+  </div>
+
+  <div class="foot">
+    <button class="ghost" id="hideBtn" aria-pressed="false">Hide the word</button>
+    <button class="ghost" id="shuffleBtn">Shuffle questions</button>
+    <button class="ghost" id="fsBtn">Full screen</button>
+  </div>
+</div>
+
+<script>
+const SCALES = {
+  adv: [
+    {w:"never",     tip:"0% of the time"},
+    {w:"rarely",    tip:"about 10% of the time\nalso: hardly ever"},
+    {w:"sometimes", tip:"about 50% of the time"},
+    {w:"often",     tip:"about 70% of the time"},
+    {w:"usually",   tip:"about 90% of the time"},
+    {w:"always",    tip:"100% of the time"}
+  ],
+  exp: [
+    {w:"once a year",   tip:"also: every year\ne.g. every Tết"},
+    {w:"twice a year",  tip:"2 times a year"},
+    {w:"once a month",  tip:"also: every month, monthly"},
+    {w:"twice a month", tip:"also: every two weeks"},
+    {w:"once a week",   tip:"also: every week, weekly\ne.g. every Wednesday"},
+    {w:"twice a week",  tip:"e.g. on Mondays and Thursdays"},
+    {w:"every weekday", tip:"Monday to Friday"},
+    {w:"every day",     tip:"also: daily"},
+    {w:"twice a day",   tip:"e.g. in the morning and in the evening"}
+  ]
+};
+/* adverbs sit at their real % on the line; expressions are evenly spaced */
+const POS = { adv:[0,10,50,70,90,100], exp:SCALES.exp.map((_,i,a) => i/(a.length-1)*100) };
+
+const QUESTIONS = [
+  {q:"How often do you work late?",                     s:"I {a} work late."},
+  {q:"How often are you late for meetings?",            s:"I am {a} late for meetings."},
+  {q:"How often do you check emails at night?",         s:"I {a} check emails at night."},
+  {q:"How often do you have lunch at your desk?",       s:"I {a} have lunch at my desk."},
+  {q:"How often do you travel for work?",               s:"I {a} travel for work."},
+  {q:"How often do you speak English at work?",         s:"I {a} speak English at work."},
+  {q:"How often are you busy on Mondays?",              s:"I am {a} busy on Mondays."},
+  {q:"How often do you work overtime?",                 s:"I {a} work overtime."},
+  {q:"How often do you meet foreign clients?",          s:"I {a} meet foreign clients."},
+  {q:"How often do you work from home?",                s:"I {a} work from home."},
+  {q:"How often are you tired after work?",             s:"I am {a} tired after work."},
+  {q:"How often do you make phone calls in English?",   s:"I {a} make phone calls in English."},
+  {q:"How often do you answer work calls on holidays?", s:"I {a} answer work calls on holidays."},
+  {q:"How often do you drink coffee in the afternoon?", s:"I {a} drink coffee in the afternoon."},
+  {q:"How often do you have team meetings?",            s:"I {a} have team meetings."},
+  {q:"How often do you give presentations?",            s:"I {a} give presentations."}
+];
+
+const $ = s => document.querySelector(s);
+let mode = "adv";
+const pos = {adv:2, exp:4};
+let order = QUESTIONS.map((_,i) => i), qi = 0, hidden = false;
+
+function buildScale(){
+  const stops = SCALES[mode], p = POS[mode];
+  $("#ticks").innerHTML = ""; $("#labels").innerHTML = "";
+  stops.forEach((st,i) => {
+    const t = document.createElement("div"); t.className = "tick"; t.style.left = p[i] + "%"; $("#ticks").append(t);
+    const b = document.createElement("button");
+    b.className = "lab" + (i % 2 ? " low" : "") + (i === 0 ? " first" : "") + (i === stops.length-1 ? " last" : "");
+    b.style.left = p[i] + "%"; b.textContent = st.w; b.dataset.tip = st.tip;
+    b.onclick = () => setStop(i);
+    $("#labels").append(b);
+  });
+  $("#card").classList.toggle("expr", mode === "exp");
+  $("#modeAdv").setAttribute("aria-pressed", mode === "adv");
+  $("#modeExp").setAttribute("aria-pressed", mode === "exp");
+}
+
+function setStop(i){ pos[mode] = Math.max(0, Math.min(SCALES[mode].length-1, i)); render(); }
+
+function render(){
+  const i = pos[mode], st = SCALES[mode][i], p = POS[mode][i], q = QUESTIONS[order[qi]];
+  $("#fill").style.width = p + "%";
+  $("#thumb").style.left = p + "%";
+  $("#thumb").setAttribute("aria-valuenow", Math.round(p));
+  $("#thumb").setAttribute("aria-valuetext", st.w);
+  document.querySelectorAll(".lab").forEach((l,k) => l.classList.toggle("on", k === i));
+
+  const word = $("#word");
+  word.textContent = hidden ? "?" : st.w;
+  word.dataset.tip = hidden ? "Click to show the word" : st.tip;
+
+  $("#qnum").textContent = qi + 1; $("#qtotal").textContent = order.length;
+  $("#question").textContent = q.q;
+
+  const ans = $("#answer"); ans.innerHTML = "";
+  const adv = document.createElement("span"); adv.className = "adv"; adv.tabIndex = 0;
+  adv.textContent = hidden ? "_______" : st.w;
+  let [before, after] = q.s.split("{a}");
+  if (mode === "adv"){
+    adv.dataset.tip = /\b(am|is|are)\s*$/.test(before) ? "after am / is / are" : "before the main verb";
+    ans.append(document.createTextNode(before), adv, document.createTextNode(after));
+  } else {
+    adv.dataset.tip = "at the end of the sentence";
+    const base = (before.trimEnd() + " " + after.trimStart()).replace(/\.\s*$/, "");
+    ans.append(document.createTextNode(base + " "), adv, document.createTextNode("."));
+  }
+
+  $("#hideBtn").setAttribute("aria-pressed", hidden);
+  $("#hideBtn").textContent = hidden ? "Show the word" : "Hide the word";
+}
+
+function setMode(m){ if (m !== mode){ mode = m; buildScale(); render(); } }
+
+/* dragging */
+const track = $("#track"), slider = $("#slider");
+function fromPointer(e){
+  const r = track.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100));
+  const p = POS[mode]; let best = 0;
+  p.forEach((v,i) => { if (Math.abs(v - pct) < Math.abs(p[best] - pct)) best = i; });
+  if (best !== pos[mode]) setStop(best);
+}
+track.addEventListener("pointerdown", e => {
+  track.setPointerCapture(e.pointerId); slider.classList.add("dragging"); fromPointer(e); $("#thumb").focus();
+});
+track.addEventListener("pointermove", e => { if (track.hasPointerCapture(e.pointerId)) fromPointer(e); });
+const endDrag = e => { slider.classList.remove("dragging"); try { track.releasePointerCapture(e.pointerId); } catch(_){} };
+track.addEventListener("pointerup", endDrag);
+track.addEventListener("pointercancel", endDrag);
+
+/* controls */
+function nextQ(){ qi = (qi + 1) % order.length; render(); }
+function prevQ(){ qi = (qi - 1 + order.length) % order.length; render(); }
+function toggleHide(){ hidden = !hidden; render(); }
+$("#modeAdv").onclick = () => setMode("adv");
+$("#modeExp").onclick = () => setMode("exp");
+$("#nextQ").onclick = nextQ;
+$("#prevQ").onclick = prevQ;
+$("#hideBtn").onclick = toggleHide;
+$("#word").onclick = toggleHide;
+$("#shuffleBtn").onclick = () => {
+  for (let i = order.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  qi = 0; render();
+};
+$("#fsBtn").onclick = () => {
+  try { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); } catch(e) {}
+};
+
+document.addEventListener("keydown", e => {
+  const k = e.key.toLowerCase();
+  if (k === "arrowright" || k === "arrowup"){ e.preventDefault(); setStop(pos[mode] + 1); }
+  else if (k === "arrowleft" || k === "arrowdown"){ e.preventDefault(); setStop(pos[mode] - 1); }
+  else if (k === "home"){ setStop(0); }
+  else if (k === "end"){ setStop(SCALES[mode].length - 1); }
+  else if (k === "n"){ nextQ(); }
+  else if (k === "h"){ toggleHide(); }
+  else if (k === "m"){ setMode(mode === "adv" ? "exp" : "adv"); }
+});
+
+buildScale(); render();
+</script>
+</body>
+</html>
