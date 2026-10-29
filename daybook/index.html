@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#E9E7F3">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="apple-touch-icon" href="../favicon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Daybook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: matches aneldabotes.com. Frosted-glass panels float over soft pastel orbs.
+   Phone: one column with a glass tab bar. Desktop: two columns. */
+:root{
+  --bg1:#F7F6FB; --bg2:#E9E7F3; --bg3:#F3EEF6;
+  --ink:#1D1B2E; --heading:#2A2745; --muted:#4C4A63;
+  --glass:rgba(255,255,255,.42); --glass-strong:rgba(255,255,255,.72); --edge:rgba(255,255,255,.8);
+  --line:rgba(90,80,140,.14); --field:rgba(255,255,255,.62);
+  --accent:#5B45C4; --accent-ink:#FFFFFF; --accent-soft:rgba(91,69,196,.12);
+  --pink:#DE7BC0; --cyan:#3FBCCB; --yellow:#E8A85A; --purple:#8C70DF; --green:#45BC9E;
+  --o-a1:#7BE3D4; --o-b1:#A98AE0; --o-c1:#E7A4D9; --o-a2:#FFD6A8; --o-b2:#E9A5D6; --o-c2:#B9B0F0;
+  --orb-shadow:rgba(90,80,140,.22); --orb-shine:#FFFFFF; --orb-op:1;
+  --shadow:0 10px 40px rgba(90,80,140,.10); --scrim:rgba(40,34,74,.28);
+  --ok:#2E9E78; --warn:#B7791F; --danger:#C2415D;
+  --f-head:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --f-body:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --hour:56px; --tap:44px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#14122A; --bg2:#1C1936; --bg3:#221A35;
+  --ink:#ECE9F8; --heading:#F6F3FF; --muted:#ABA6C8;
+  --glass:rgba(44,38,80,.48); --glass-strong:rgba(52,45,92,.86); --edge:rgba(255,255,255,.14);
+  --line:rgba(255,255,255,.10); --field:rgba(255,255,255,.07);
+  --accent:#AE9BFF; --accent-ink:#17142E; --accent-soft:rgba(174,155,255,.16);
+  --pink:#EE94D0; --cyan:#6AD6E2; --yellow:#F2BE78; --purple:#AE96FF; --green:#6AD9BB;
+  --orb-shadow:rgba(0,0,0,.4); --orb-shine:rgba(255,255,255,.75); --orb-op:.55;
+  --shadow:0 10px 40px rgba(0,0,0,.35); --scrim:rgba(5,4,15,.55);
+  --ok:#6AD9BB; --warn:#F2BE78; --danger:#FF8DA6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg1:#14122A; --bg2:#1C1936; --bg3:#221A35;
+  --ink:#ECE9F8; --heading:#F6F3FF; --muted:#ABA6C8;
+  --glass:rgba(44,38,80,.48); --glass-strong:rgba(52,45,92,.86); --edge:rgba(255,255,255,.14);
+  --line:rgba(255,255,255,.10); --field:rgba(255,255,255,.07);
+  --accent:#AE9BFF; --accent-ink:#17142E; --accent-soft:rgba(174,155,255,.16);
+  --pink:#EE94D0; --cyan:#6AD6E2; --yellow:#F2BE78; --purple:#AE96FF; --green:#6AD9BB;
+  --orb-shadow:rgba(0,0,0,.4); --orb-shine:rgba(255,255,255,.75); --orb-op:.55;
+  --shadow:0 10px 40px rgba(0,0,0,.35); --scrim:rgba(5,4,15,.55);
+  --ok:#6AD9BB; --warn:#F2BE78; --danger:#FF8DA6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,var(--bg3));background-color:var(--bg2);background-attachment:fixed;color:var(--ink);font:400 16px/1.55 var(--f-body);-webkit-text-size-adjust:100%;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg1)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Orbs (same recipe as the teaching site) */
+.orbs{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:var(--orb-op)}
+.orb{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 26%,var(--orb-shine) 0 5%,transparent 14%),radial-gradient(circle at 35% 32%,var(--a),var(--b) 58%,var(--c));box-shadow:-34px 44px 60px var(--orb-shadow);animation:float 16s ease-in-out infinite}
+.o1{width:min(42vw,340px);aspect-ratio:1;right:-10%;top:6%;--a:var(--o-a1);--b:var(--o-b1);--c:var(--o-c1)}
+.o2{width:min(28vw,220px);aspect-ratio:1;left:-8%;top:34%;--a:var(--o-a2);--b:var(--o-b2);--c:var(--o-c2);animation-duration:13s;animation-delay:-4s}
+.o3{width:min(22vw,160px);aspect-ratio:1;right:4%;bottom:10%;--a:var(--o-a2);--b:var(--o-b2);--c:var(--o-a1);animation-duration:11s;animation-delay:-7s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20px,-36px) scale(1.04)}66%{transform:translate(14px,-16px) scale(.97)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
+
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px calc(100px + env(safe-area-inset-bottom,0px))}
+@media (min-width:880px){.wrap{padding-block:28px 56px}}
+
+/* Brand row */
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand h1{margin:0;font:600 clamp(32px,8vw,48px)/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--heading)}
+.sun{flex:none;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 26%,var(--orb-shine) 0 8%,transparent 20%),radial-gradient(circle at 35% 32%,var(--o-a1),var(--o-b1) 58%,var(--o-c1));box-shadow:-6px 8px 14px var(--orb-shadow)}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;white-space:nowrap;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:block}
+.status[data-s="synced"] i{background:var(--ok)}
+.status[data-s="saving"] i{background:var(--accent)}
+.status[data-s="local"] i{background:var(--warn)}
+.status[data-s="error"] i{background:var(--danger)}
+
+/* Panels */
+.panel{position:relative;background:var(--glass);border:1px solid var(--edge);border-radius:24px;box-shadow:var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);min-width:0}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 22px 4px;min-height:52px}
+.bar h2{margin:0;font:600 26px/1.15 var(--f-head);color:var(--heading)}
+.bar small{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.pbody{padding:8px 22px 20px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 10px}
+
+/* Today panel */
+.clock .pbody{display:grid;gap:14px}
+.clockrow{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.time{font:600 clamp(60px,17vw,84px)/.85 var(--f-head);color:var(--heading);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em}
+.time .colon{display:inline-block;color:var(--accent)}
+.daybox{text-align:right;min-width:0}
+.dayname{margin:0;font:600 30px/1 var(--f-head);color:var(--heading)}
+.datefull{font-size:14px;color:var(--muted);margin-top:4px}
+.tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:999px;margin-left:8px;vertical-align:1px}
+.ctrls{display:flex;gap:8px;align-items:center}
+.ctrls .grow{flex:1}
+.pbtn{min-width:var(--tap);height:var(--tap);border-radius:999px;border:1px solid var(--edge);background:var(--field);display:inline-grid;place-items:center;padding:0 16px;font-size:15px;font-weight:500}
+.pbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pbtn:hover{background:var(--glass-strong)}
+.pbtn.start{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.pbtn[disabled]{opacity:.45;cursor:default}
+.meter{display:grid;gap:6px}
+.meter .lbl{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.meter .lbl b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.track{height:12px;border-radius:999px;background:var(--line);overflow:hidden}
+.fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--o-a1),var(--o-b1) 60%,var(--o-c1))}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+.weekbtn{border:0;background:transparent;color:var(--heading);font:600 26px/1.15 var(--f-head);padding:4px 0;min-height:40px;display:flex;align-items:center;gap:8px}
+.weekbtn svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.weekbtn:hover svg{stroke:var(--accent)}
+
+/* Week strip */
+.weekbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:14px 0 0;padding:8px 0}
+.weekbar .inner{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;background:var(--glass-strong);border:1px solid var(--edge);border-radius:999px;padding:5px;box-shadow:var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.wd{height:52px;border:0;border-radius:999px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;line-height:1;position:relative}
+.wd .l{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.wd .n{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.wd .dot{width:5px;height:5px;border-radius:50%;margin-top:2px;background:transparent}
+.wd.has .dot{background:var(--pink)}
+.wd.today .n{color:var(--accent)}
+.wd.sel{background:var(--accent);color:var(--accent-ink)}
+.wd.sel .l,.wd.sel .n{color:var(--accent-ink)}
+.wd.sel.has .dot{background:var(--accent-ink)}
+.wd:hover:not(.sel){background:var(--field)}
+
+/* Grid */
+main{display:grid;gap:18px;margin-top:10px;grid-template-columns:minmax(0,1fr)}
+.col{display:grid;gap:18px;align-content:start;min-width:0}
+@media (min-width:880px){main{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+section{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 86px)}
+
+.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--glass-strong);border:1px solid var(--edge);border-radius:20px;padding:12px 16px;font-size:15px;box-shadow:var(--shadow)}
+.btn{min-height:42px;padding:0 18px;border-radius:999px;border:1px solid var(--edge);background:var(--field);font-size:15px;font-weight:500}
+.btn:hover{background:var(--glass-strong)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.small{min-height:36px;padding:0 14px;font-size:14px}
+.btn.onbar{background:var(--field)}
+.btn.danger{color:var(--danger)}
+.btn.ghost{background:transparent;border-color:transparent}
+
+/* Lists */
+.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr)}
+.item{display:flex;align-items:center;gap:2px;min-height:var(--tap);border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.check{flex:none;width:var(--tap);height:var(--tap);border:0;background:transparent;display:grid;place-items:center;padding:0}
+.check span{width:22px;height:22px;border:1.5px solid var(--muted);border-radius:7px;display:grid;place-items:center;background:var(--field)}
+.check svg{width:14px;height:14px;fill:none;stroke:var(--accent-ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.done .check span{background:var(--accent);border-color:var(--accent)}
+.done .check svg{opacity:1}
+.txt{flex:1;width:0;min-width:0;border:0;background:transparent;padding:10px 6px;outline:none;font-size:16px}
+.txt:focus{background:var(--field);border-radius:10px}
+.txt::placeholder{color:var(--muted)}
+.done .txt{color:var(--muted);text-decoration:line-through}
+.xpb{flex:none;border:0;background:transparent;padding:4px 2px;min-height:40px;display:grid;place-items:center}
+.xpb span{font-size:12px;font-weight:600;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.done .xpb span{background:var(--line);color:var(--muted)}
+.del{flex:none;width:40px;height:40px;border:0;background:transparent;color:var(--muted);border-radius:999px;display:grid;place-items:center;opacity:.6}
+.del:hover,.del:focus-visible{opacity:1;color:var(--danger)}
+.del svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round}
+.add{display:flex;align-items:center;gap:4px;min-height:var(--tap);margin-top:8px;border:1px dashed var(--line);border-radius:14px;background:var(--field)}
+.add .plus{flex:none;width:var(--tap);height:40px;display:grid;place-items:center;font-size:20px;color:var(--accent)}
+.add input{flex:1;min-width:0;border:0;background:transparent;padding:10px 4px;outline:none;font-size:16px}
+.add input::placeholder{color:var(--muted)}
+.add select{flex:none;border:1px solid var(--edge);border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600;min-height:34px;padding:0 6px;margin-right:2px}
+.add .btn{margin-right:5px}
+.moverow{display:flex;justify-content:flex-end;padding-top:10px}
+
+/* Schedule */
+.sched-scroll{max-height:min(560px,62vh);overflow-y:auto;overscroll-behavior:contain;margin:0 -22px;padding:8px 22px 6px;-webkit-overflow-scrolling:touch}
+.tl{position:relative;cursor:copy}
+.hr{height:var(--hour);border-top:1px solid var(--line);display:flex;position:relative}
+.hr::after{content:"";position:absolute;left:52px;right:0;top:50%;border-top:1px dashed var(--line)}
+.hr .lab{width:52px;flex:none;font-size:12px;color:var(--muted);transform:translateY(-9px);height:18px;line-height:18px;font-variant-numeric:tabular-nums}
+.blk{--bk:var(--purple);position:absolute;border:1px solid color-mix(in srgb,var(--bk) 45%,transparent);border-radius:12px;background:color-mix(in srgb,var(--bk) 20%,var(--glass-strong));color:var(--ink);text-align:left;padding:4px 10px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;cursor:pointer;min-height:24px}
+.blk:nth-of-type(3n+2){--bk:var(--cyan)}
+.blk:nth-of-type(3n){--bk:var(--pink)}
+.blk b{font-weight:600;font-size:14px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.blk span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.blk.short{flex-direction:row;align-items:center;gap:6px;padding-block:0}
+.now{position:absolute;left:48px;right:0;height:0;border-top:2px solid var(--pink);pointer-events:none;z-index:2}
+.now::before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--pink)}
+
+/* Habits: orbs fill in like the site's floating orbs */
+.hgrid{display:grid;gap:14px}
+.hdays,.hrow .disks{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.hdays span{text-align:center;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.hdays span.sel{color:var(--accent);font-weight:700}
+.hrow{display:grid;gap:4px}
+.hname{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px}
+.hname button{border:0;background:transparent;padding:4px 0;text-align:left;font-weight:600;font-size:16px;min-width:0;overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:8px;min-height:34px}
+.hname button i{flex:none;width:10px;height:10px;border-radius:50%;background:var(--hc)}
+.streak{font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.streak b{font-weight:600;color:var(--ink)}
+.disk{height:46px;border:0;border-radius:14px;background:transparent;display:grid;place-items:center;padding:0}
+.disk .o{width:30px;height:30px;border-radius:50%;border:1.5px dashed var(--muted);opacity:.55;display:block}
+.disk.on .o{border:0;opacity:1;background:radial-gradient(circle at 30% 26%,var(--orb-shine) 0 8%,transparent 22%),radial-gradient(circle at 36% 34%,color-mix(in srgb,var(--hc) 55%,white),var(--hc) 62%,color-mix(in srgb,var(--hc) 75%,black));box-shadow:-4px 6px 10px var(--orb-shadow)}
+.disk.sel{background:var(--accent-soft)}
+.disk.future .o{opacity:.3}
+@media (prefers-reduced-motion:no-preference){.disk .o{transition:transform .15s}.disk:active .o{transform:scale(.85)}}
+.suggest{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.suggest button{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--edge);background:var(--field);font-size:14px}
+
+/* Notes */
+.tape{display:none}
+textarea#notes{width:100%;min-height:150px;border:0;resize:none;background:transparent;outline:none;font-size:16px;line-height:1.75;padding:2px 2px 6px;background-image:linear-gradient(transparent calc(1.75em - 1px),var(--line) calc(1.75em - 1px));background-size:100% 1.75em;background-attachment:local}
+
+/* Tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--glass-strong);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--edge);padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+.tabs button{border:0;background:transparent;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted);border-radius:16px}
+.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--accent);background:var(--accent-soft)}
+@media (min-width:880px){.tabs{display:none}}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20;display:flex;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet{width:100%;max-width:480px;border-radius:24px 24px 0 0;background:var(--glass-strong)}
+.sheet .pbody{display:grid;gap:14px;padding:10px max(20px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+@media (min-width:600px){.scrim{align-items:center;padding:16px}.sheet{border-radius:24px}.sheet .pbody{padding:10px 22px 20px}}
+.field{display:grid;gap:5px}
+.field label{font-size:13px;font-weight:500;color:var(--muted)}
+.field input{min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--field);padding:8px 12px;font-size:16px;width:100%;min-width:0}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--edge);background:var(--field);font-size:14px;font-variant-numeric:tabular-nums}
+.quick button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches button{width:38px;height:38px;border-radius:50%;border:3px solid transparent;background:var(--sw);box-shadow:inset 0 0 0 2px var(--edge)}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.acts{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.acts div{display:flex;gap:8px;margin-left:auto}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--glass-strong);color:var(--ink);border:1px solid var(--edge);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;z-index:30;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+@media (min-width:880px){.toast{bottom:24px}}
+button.status{cursor:pointer;color:var(--ink)}
+.qr{background:#FFFFFF;padding:12px;border-radius:18px;width:min(230px,70vw);margin:4px auto 0;box-shadow:var(--shadow)}
+.qr svg{display:block;width:100%;height:auto}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace!important;font-size:14px!important}
+.err{color:var(--danger);font-size:14px;margin:0}
+.steps{margin:0;padding-left:20px;font-size:14px;color:var(--muted);display:grid;gap:4px}
+.sheet details{border-top:1px solid var(--line);padding-top:10px}
+.sheet summary{cursor:pointer;font-weight:500;min-height:36px;display:flex;align-items:center}
+.sheet textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;background:var(--field);padding:10px;font-size:13px;resize:vertical}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="orbs" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
+
+<div class="wrap">
+  <div class="brandrow">
+    <div class="brand">
+      <div class="sun" aria-hidden="true"></div>
+      <h1>Daybook</h1>
+    </div>
+    <button class="status" id="status" data-s="connecting" title="Sync settings"><i></i><span id="statustext">Connecting</span></button>
+  </div>
+
+  <section class="panel cyan clock" id="sec-today" aria-labelledby="dayname">
+    <div class="bar"><button class="weekbtn" id="weekno" aria-label="Change when week 1 starts"></button><small id="dayDone"></small></div>
+    <div class="pbody">
+      <div class="clockrow">
+        <div class="time" id="time" aria-label="Current time"></div>
+        <div class="daybox">
+          <h1 class="dayname" id="dayname">Today</h1>
+          <div class="datefull"><span id="datefull"></span><span class="tag" id="reltag" hidden></span></div>
+        </div>
+      </div>
+      <div class="meter" aria-live="polite">
+        <div class="lbl"><span>Day progress</span><b id="pct">0 XP</b></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+      </div>
+      <div class="ctrls">
+        <button class="pbtn" id="prevD" aria-label="Previous day"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="pbtn start" id="todayBtn">Today</button>
+        <span class="grow"></span>
+        <button class="pbtn" id="nextD" aria-label="Next day"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <nav class="weekbar" aria-label="Week">
+    <div class="inner" id="week" role="tablist" aria-label="Days of the week (swipe to change week)"></div>
+  </nav>
+
+  <main>
+    <div id="carry" hidden class="banner" style="grid-column:1/-1"></div>
+    <div class="col">
+      <section class="panel cyan" id="sec-plan" aria-labelledby="h-sched">
+        <div class="bar"><h2 id="h-sched">Schedule</h2><button class="btn small onbar" id="addBlock">+ Block</button></div>
+        <div class="pbody">
+          <p class="hint" id="schedHint">Tap any time to add a block.</p>
+          <div class="sched-scroll" id="schedScroll"><div class="tl" id="tl"></div></div>
+        </div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="panel pink lav" id="sec-tasks" aria-labelledby="h-todo">
+        <div class="bar"><h2 id="h-todo">Tasks</h2><small id="todoCount"></small></div>
+        <div class="pbody">
+          <p class="hint" id="todoHint">Each task is worth XP. Tap the XP badge to change it. Earn 150 XP from tasks and habits to complete the day.</p>
+          <ul class="list" id="todoList"></ul>
+          <form class="add" id="todoAdd" autocomplete="off">
+            <span class="plus" aria-hidden="true">+</span>
+            <input id="todoInput" placeholder="Add a task" enterkeyhint="done" aria-label="Add a task">
+          </form>
+          <div class="moverow" id="moveWrap" hidden><button class="btn small" id="moveBtn">Move unfinished</button></div>
+        </div>
+      </section>
+      <section class="panel purple" id="sec-habits" aria-labelledby="h-hab">
+        <div class="bar"><h2 id="h-hab">Habits</h2><small id="habCount"></small></div>
+        <div class="pbody">
+          <div class="hgrid" id="habits"></div>
+          <form class="add" id="habAdd" autocomplete="off">
+            <span class="plus" aria-hidden="true">+</span>
+            <input id="habInput" placeholder="New habit" enterkeyhint="done" aria-label="New habit" maxlength="40">
+            <select id="habXp" aria-label="XP for this habit"></select>
+            <button class="btn small primary" style="margin-right:4px">Add</button>
+          </form>
+        </div>
+      </section>
+      <section class="panel yellow notes" id="sec-notes" aria-labelledby="h-notes">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="bar"><h2 id="h-notes">Notes</h2></div>
+        <div class="pbody"><textarea id="notes" placeholder="Thoughts, ideas, how the day went…" aria-label="Notes for the day"></textarea></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <button data-go="sec-today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>Today</button>
+  <button data-go="sec-plan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Plan</button>
+  <button data-go="sec-tasks"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Tasks</button>
+  <button data-go="sec-habits"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="12" r="3.5"/><circle cx="16.5" cy="12" r="3.5"/><path d="M11 12h2"/></svg>Habits</button>
+  <button data-go="sec-notes"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Notes</button>
+</nav>
+
+<div id="sheetHost"></div>
+<div id="toastHost"></div>
+
+<script>
+(() => {
+"use strict";
+const SCHEMA = 2;
+const XP_VALUES = [5,10,20,30,50];
+const LS_KEY = "daybook.days.v1";
+const LS_HAB = "daybook.habits.v1";
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromKey = (k) => { const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d); };
+const addDays = (k, n) => { const d = fromKey(k); d.setDate(d.getDate()+n); return keyOf(d); };
+const todayKey = () => keyOf(new Date());
+const isDayKey = (k) => /^\d{4}-\d{2}-\d{2}$/.test(k);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const fmtMin = (m) => `${pad(Math.floor(m/60)%24)}:${pad(m%60)}`;
+const parseHM = (s) => { const [h, m] = (s||"0:0").split(":").map(Number); return (h||0)*60 + (m||0); };
+const isoWeek = (d) => { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return Math.ceil(((t - y0)/86400000 + 1)/7); };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Data model ----------
+   Day record (one per date): {v, priorities:[{id,text,done}x3], todos:[{id,text,done}], blocks:[{id,start,dur,title}], notes, habits:{habitId:true}}
+   Habit list (one record, id "habits"): {v, list:[{id,name,color}]}
+   normalize() upgrades older shapes (v1 had no habits) so stored entries are never lost. */
+function emptyDay(){ return { v: SCHEMA, priorities: [0,1,2].map(() => ({id: uid(), text:"", done:false})), todos: [], blocks: [], notes: "", habits: {} }; }
+function normalize(raw){
+  const d = emptyDay();
+  if (!raw || typeof raw !== "object") return d;
+  const s = (x) => typeof x === "string" ? x : "";
+  if (Array.isArray(raw.priorities)) raw.priorities.slice(0,3).forEach((p, i) => { d.priorities[i] = { id: p && p.id || uid(), text: s(p && p.text), done: !!(p && p.done) }; });
+  if (Array.isArray(raw.todos)) d.todos = raw.todos.filter(Boolean).map(t => ({ id: t.id || uid(), text: s(t.text), done: !!t.done, xp: XP_VALUES.includes(+t.xp) ? +t.xp : 10 }));
+  if (Array.isArray(raw.blocks)) d.blocks = raw.blocks.filter(Boolean).map(b => ({ id: b.id || uid(), start: Math.max(0, Math.min(1439, +b.start || 0)), dur: Math.max(15, Math.min(1440, +b.dur || 60)), title: s(b.title) }));
+  d.notes = s(raw.notes);
+  if (raw.habits && typeof raw.habits === "object" && !Array.isArray(raw.habits)) for (const k in raw.habits) if (raw.habits[k] === true) d.habits[k] = true;
+  for (const k of Object.keys(raw)) if (!(k in d)) d[k] = raw[k];   // keep fields from future versions
+  d.v = SCHEMA;
+  return d;
+}
+const COLORS = ["pink","cyan","yellow","purple","green"];
+function normalizeHabits(raw){
+  const out = { v: 1, list: [] };
+  if (raw && Array.isArray(raw.list)) out.list = raw.list.filter(h => h && typeof h.name === "string").map(h => ({ id: h.id || uid(), name: h.name, color: COLORS.includes(h.color) ? h.color : "pink", xp: XP_VALUES.includes(+h.xp) ? +h.xp : 10 }));
+  return out;
+}
+const hasContent = (d) => !!d && (d.priorities.some(p => p.text.trim()) || d.todos.length || d.blocks.length || d.notes.trim() || Object.keys(d.habits).length);
+
+/* ---------- State ---------- */
+const days = {};
+let habitsDoc = { v: 1, list: [] };
+let settings = { v: 1, week1: null };   // week1 = Monday (YYYY-MM-DD) that counts as Week 1; null = calendar weeks
+const LS_SET = "daybook.settings.v1";
+const normSettings = (r) => ({ v: 1, week1: r && typeof r.week1 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.week1) ? r.week1 : null });
+let sel = todayKey();
+let mode = "connecting";
+const dirty = new Set();
+const timers = {};
+const writing = {};
+function getDay(k){ return days[k] || (days[k] = emptyDay()); }
+const bodyOf = (k) => k === "habits" ? habitsDoc : k === "settings" ? settings : getDay(k);
+
+/* ---------- On-device copy (backup + offline) ---------- */
+function readJSON(key){ try { const r = JSON.parse(localStorage.getItem(key) || "null"); return r && typeof r === "object" ? r : null; } catch { return null; } }
+function writeLocal(){
+  try { const out = {}; for (const k in days) if (hasContent(days[k])) out[k] = days[k]; localStorage.setItem(LS_KEY, JSON.stringify(out)); localStorage.setItem(LS_HAB, JSON.stringify(habitsDoc)); localStorage.setItem(LS_SET, JSON.stringify(settings)); } catch {}
+}
+const local0 = readJSON(LS_KEY) || {};
+const localHab0 = readJSON(LS_HAB);
+for (const k in local0) if (isDayKey(k)) days[k] = normalize(local0[k]);
+if (localHab0) habitsDoc = normalizeHabits(localHab0);
+const localSet0 = readJSON(LS_SET);
+if (localSet0) settings = normSettings(localSet0);
+
+/* ---------- Status label ---------- */
+function setStatus(s){
+  const el = $("status"); el.dataset.s = s;
+  $("statustext").textContent = ({connecting:"Connecting", synced:"Synced", saving:"Saving", local:"This device", error:"Retrying", setup:"Set up sync", offline:"Offline", badkey:"Check sync key"})[s] || s;
+  el.title = s === "setup" ? "Entries are saved on this device only. Tap to set up sync." : s === "offline" ? "No connection. Entries are saved on this device and will sync when you're back online." : s === "badkey" ? "Cloudflare didn't accept the sync key. Tap to fix." : s === "error" ? "Couldn't save just now. Trying again." : "Entries sync across your devices. Tap for sync settings.";
+}
+
+/* ---------- Saving ---------- */
+function changed(k){
+  dirty.add(k);
+  writeLocal();
+  updateWeekDots();
+  renderProgress();
+  if (mode !== "db") { dirty.delete(k); return; }
+  setStatus("saving");
+  clearTimeout(timers[k]);
+  timers[k] = setTimeout(() => flush(k), 500);
+}
+async function flush(k){
+  if (writing[k]) { writing[k].again = true; return; }
+  writing[k] = { again: false };
+  try {
+    for (let attempt = 0; ; attempt++) {
+      try { await remoteSet(k, JSON.parse(JSON.stringify(bodyOf(k)))); break; }
+      catch (e) {
+        if (attempt === 0 && e && e.code === "server") { await new Promise(r => setTimeout(r, 800 + Math.random()*800)); continue; }
+        throw e;
+      }
+    }
+    const again = writing[k].again; writing[k] = null;
+    if (again) return flush(k);
+    dirty.delete(k);
+    if (!dirty.size && !Object.values(writing).some(Boolean)) setStatus("synced");
+  } catch (e) {
+    writing[k] = null;
+    if (e && e.code === "badkey") { setStatus("badkey"); return; }
+    setStatus(e && e.code === "network" ? "offline" : "error");
+    clearTimeout(timers[k]); timers[k] = setTimeout(() => flush(k), 8000);
+  }
+}
+window.addEventListener("pagehide", () => { if (mode === "db") for (const k of dirty) { clearTimeout(timers[k]); flush(k); } });
+
+/* ---------- Clock ---------- */
+let lastClock = "";
+function tickClock(){
+  const n = new Date();
+  const s = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  if (s === lastClock) return; lastClock = s;
+  $("time").innerHTML = `${pad(n.getHours())}<span class="colon">:</span>${pad(n.getMinutes())}`;
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ---------- Header + week strip ---------- */
+const WD = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function weekStart(k){ const d = fromKey(k); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return keyOf(d); }
+function renderHeader(){
+  const d = fromKey(sel), t = todayKey();
+  const rel = sel === t ? "Today" : sel === addDays(t,1) ? "Tomorrow" : sel === addDays(t,-1) ? "Yesterday" : "";
+  $("dayname").textContent = d.toLocaleDateString(undefined, { weekday: "long" });
+  $("datefull").textContent = d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  $("reltag").hidden = !rel; $("reltag").textContent = rel;
+  $("weekno").innerHTML = `<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>`;
+  $("weekno").firstChild.textContent = weekLabel(sel);
+  $("todayBtn").disabled = sel === t;
+  const ws = weekStart(sel), wk = $("week"); wk.innerHTML = "";
+  for (let i = 0; i < 7; i++) {
+    const k = addDays(ws, i), dd = fromKey(k);
+    const b = document.createElement("button");
+    b.className = "wd" + (k === sel ? " sel" : "") + (k === t ? " today" : "") + (hasContent(days[k]) ? " has" : "");
+    b.setAttribute("role","tab"); b.setAttribute("aria-selected", k === sel);
+    b.dataset.k = k;
+    b.setAttribute("aria-label", dd.toLocaleDateString(undefined, { weekday:"long", day:"numeric", month:"long" }));
+    b.innerHTML = `<span class="l">${WD[dd.getDay()].slice(0,2)}</span><span class="n">${dd.getDate()}</span><span class="dot"></span>`;
+    b.onclick = () => go(k);
+    wk.appendChild(b);
+  }
+}
+function weekLabel(k){
+  if (!settings.week1) return "Week " + isoWeek(fromKey(k));
+  const n = Math.round((fromKey(weekStart(k)) - fromKey(settings.week1)) / 604800000) + 1;
+  return n >= 1 ? "Week " + n : "Before week 1";
+}
+$("weekno").onclick = () => {
+  const cur = settings.week1 || weekStart(todayKey());
+  const { form, close } = openSheet("cyan", "Week 1", `
+    <p class="hint" style="margin:0">Pick any day. The week it falls in (Monday to Sunday) becomes Week 1, and the weeks after it count up from there.</p>
+    <div class="field"><label for="w1">Week 1 starts</label><input id="w1" type="date"></div>
+    <div class="quick"><button type="button" id="w1this">This week is Week 1</button></div>
+    <div class="acts">${settings.week1 ? `<button type="button" class="btn ghost" id="w1reset">Use calendar weeks</button>` : ""}<div><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn primary">Save</button></div></div>`);
+  $("w1").value = cur;
+  $("w1this").onclick = () => { $("w1").value = weekStart(todayKey()); };
+  const r = $("w1reset"); if (r) r.onclick = () => { settings.week1 = null; changed("settings"); close(); renderHeader(); toast("Using calendar weeks"); };
+  form.onsubmit = (e) => { e.preventDefault(); if (!$("w1").value) return; settings.week1 = weekStart($("w1").value); changed("settings"); close(); renderHeader(); toast("Week 1 starts " + fromKey(settings.week1).toLocaleDateString(undefined, { day:"numeric", month:"short", year:"numeric" })); };
+};
+function updateWeekDots(){ document.querySelectorAll(".wd").forEach(b => b.classList.toggle("has", hasContent(days[b.dataset.k]))); }
+function go(k){ sel = k; renderAll(); scrollSchedule(); }
+$("prevD").onclick = () => go(addDays(sel, -1));
+$("nextD").onclick = () => go(addDays(sel, 1));
+$("todayBtn").onclick = () => go(todayKey());
+(() => { let x0 = null; const w = $("week");
+  w.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  w.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) go(addDays(sel, dx < 0 ? 7 : -7)); });
+})();
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea") || $("sheetHost").firstChild) return;
+  if (e.key === "ArrowLeft") go(addDays(sel, -1));
+  else if (e.key === "ArrowRight") go(addDays(sel, 1));
+  else if (e.key === "t" || e.key === "T") go(todayKey());
+});
+
+/* ---------- Day progress: XP from completed tasks ---------- */
+const dayXp = (d) => {
+  const ts = d.todos.filter(t => t.text.trim()), hs = habitsDoc.list;
+  return { total: ts.reduce((a, t) => a + t.xp, 0) + hs.reduce((a, h) => a + h.xp, 0),
+           got: ts.filter(t => t.done).reduce((a, t) => a + t.xp, 0) + hs.filter(h => d.habits[h.id]).reduce((a, h) => a + h.xp, 0) };
+};
+const DAY_TARGET = 150;   // XP needed to complete a day
+const isComplete = (d) => dayXp(d).got >= DAY_TARGET;
+function renderProgress(){
+  const { got } = dayXp(getDay(sel));
+  const pct = Math.min(100, Math.round(got / DAY_TARGET * 100));
+  $("pct").textContent = `${got} / ${DAY_TARGET} XP`;
+  $("fill").style.width = pct + "%";
+  $("dayDone").textContent = got >= DAY_TARGET ? "Day complete" : pct + "%";
+}
+
+/* ---------- Icons ---------- */
+const ICON_CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const FLOPPY = '<span class="o" aria-hidden="true"></span>';
+
+/* ---------- Priorities ---------- */
+function renderPrio(){
+  const d = getDay(sel), ul = $("prioList"); ul.innerHTML = "";
+  d.priorities.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.className = "item" + (p.done ? " done" : "") + (p.text.trim() ? " filled" : "");
+    li.innerHTML = `<span class="num" aria-hidden="true">${i+1}</span><input class="txt" id="prio-${i}" aria-label="Priority ${i+1}"><button class="check" aria-label="Mark priority ${i+1} done"><span>${ICON_CHECK}</span></button>`;
+    const inp = li.querySelector("input");
+    inp.value = p.text; inp.placeholder = ["The one thing that makes today a win","Second most important","Third"][i];
+    inp.oninput = () => { p.text = inp.value; li.classList.toggle("filled", !!inp.value.trim()); changed(sel); };
+    inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); const nx = $("prio-" + (i+1)); nx ? nx.focus() : inp.blur(); } };
+    li.querySelector(".check").onclick = () => { if (!p.text.trim()) { inp.focus(); return; } p.done = !p.done; li.classList.toggle("done", p.done); changed(sel); };
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- To-dos ---------- */
+function renderTodos(){
+  const d = getDay(sel), ul = $("todoList"); ul.innerHTML = "";
+  d.todos.forEach((t) => {
+    const li = document.createElement("li");
+    li.className = "item" + (t.done ? " done" : "");
+    li.innerHTML = `<button class="check" aria-label="Done"><span>${ICON_CHECK}</span></button><input class="txt" aria-label="Task" id="todo-${t.id}"><button class="xpb" aria-label="XP for this task: ${t.xp}. Tap to change"><span>+${t.xp} XP</span></button><button class="del" aria-label="Delete task">${ICON_X}</button>`;
+    li.querySelector(".xpb").onclick = () => { t.xp = XP_VALUES[(XP_VALUES.indexOf(t.xp) + 1) % XP_VALUES.length]; changed(sel); renderTodos(); };
+    const inp = li.querySelector("input"); inp.value = t.text;
+    inp.oninput = () => { t.text = inp.value; changed(sel); };
+    inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); $("todoInput").focus(); } };
+    inp.onblur = () => { if (!t.text.trim()) { d.todos = d.todos.filter(x => x !== t); changed(sel); renderTodos(); } };
+    li.querySelector(".check").onclick = () => {
+      const wasDone = isComplete(d);
+      t.done = !t.done; li.classList.toggle("done", t.done); changed(sel); todoMeta();
+      if (t.done) toast(isComplete(d) && !wasDone ? `Day complete! ${dayXp(d).got} XP earned` : `+${t.xp} XP`);
+    };
+    li.querySelector(".del").onclick = () => { d.todos = d.todos.filter(x => x !== t); changed(sel); renderTodos(); };
+    ul.appendChild(li);
+  });
+  todoMeta();
+}
+function todoMeta(){
+  const d = getDay(sel), open = d.todos.filter(t => !t.done && t.text.trim()).length, all = d.todos.length;
+  $("todoCount").textContent = all ? `${all - open} of ${all} done` : "";
+  $("todoHint").hidden = all > 0;
+  $("moveWrap").hidden = open === 0;
+  $("moveBtn").textContent = `Move ${open} to ${sel === todayKey() ? "tomorrow" : "next day"} >`;
+}
+$("todoAdd").onsubmit = (e) => {
+  e.preventDefault();
+  const v = $("todoInput").value.trim(); if (!v) return;
+  getDay(sel).todos.push({ id: uid(), text: v, done: false, xp: 10 });
+  $("todoInput").value = ""; changed(sel); renderTodos(); $("todoInput").focus();
+};
+function moveUnfinished(from, to){
+  const a = getDay(from), b = getDay(to);
+  const moving = a.todos.filter(t => !t.done && t.text.trim());
+  if (!moving.length) return 0;
+  const have = new Set(b.todos.map(t => t.text.trim().toLowerCase()));
+  for (const t of moving) if (!have.has(t.text.trim().toLowerCase())) b.todos.push({ id: uid(), text: t.text, done: false, xp: t.xp });
+  a.todos = a.todos.filter(t => !moving.includes(t));
+  changed(from); changed(to);
+  return moving.length;
+}
+$("moveBtn").onclick = () => {
+  const to = addDays(sel, 1), n = moveUnfinished(sel, to);
+  renderAll();
+  toast(`${n} task${n === 1 ? "" : "s"} moved to ${fromKey(to).toLocaleDateString(undefined, { weekday:"short", day:"numeric", month:"short" })}`);
+};
+
+/* ---------- Carry-over banner ---------- */
+function renderCarry(){
+  const el = $("carry"), t = todayKey();
+  if (sel !== t) { el.hidden = true; return; }
+  const y = addDays(t, -1), left = days[y] ? days[y].todos.filter(x => !x.done && x.text.trim()).length : 0;
+  if (!left) { el.hidden = true; return; }
+  el.hidden = false; el.innerHTML = "";
+  const s = document.createElement("span"); s.textContent = `${left} unfinished task${left === 1 ? "" : "s"} from yesterday.`;
+  const b = document.createElement("button"); b.className = "btn primary"; b.textContent = "Bring them over";
+  b.onclick = () => { const n = moveUnfinished(y, t); renderAll(); toast(`${n} task${n === 1 ? "" : "s"} added to today`); };
+  el.append(s, b);
+}
+
+/* ---------- Schedule ---------- */
+let H0 = 6, H1 = 24;
+const hourPx = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--hour")) || 56;
+function renderSched(){
+  const d = getDay(sel), tl = $("tl");
+  H0 = Math.min(6, ...d.blocks.map(b => Math.floor(b.start/60))); H1 = 24;
+  const HOUR = hourPx();
+  tl.innerHTML = "";
+  for (let h = H0; h < H1; h++) {
+    const r = document.createElement("div"); r.className = "hr";
+    r.innerHTML = `<span class="lab">${pad(h)}:00</span>`;
+    tl.appendChild(r);
+  }
+  const bs = [...d.blocks].sort((a, b) => a.start - b.start || b.dur - a.dur);
+  let cluster = [], cEnd = -1;
+  const place = (cl) => { const cols = []; cl.forEach(b => { let c = cols.findIndex(e => e <= b.start); if (c < 0) { c = cols.length; cols.push(0); } cols[c] = b.start + b.dur; b._c = c; }); cl.forEach(b => b._n = cols.length); };
+  bs.forEach(b => { if (b.start >= cEnd && cluster.length) { place(cluster); cluster = []; } cluster.push(b); cEnd = Math.max(cEnd, b.start + b.dur); });
+  if (cluster.length) place(cluster);
+  bs.forEach(b => {
+    const el = document.createElement("button"); el.className = "blk";
+    const top = (b.start - H0*60) / 60 * HOUR, h = Math.max(24, b.dur / 60 * HOUR - 3);
+    el.style.top = top + 1 + "px"; el.style.height = h + "px";
+    el.style.left = `calc(56px + (100% - 60px) * ${b._c} / ${b._n})`;
+    el.style.width = `calc((100% - 60px) / ${b._n} - 6px)`;
+    if (h < 40) el.classList.add("short");
+    const t = document.createElement("b"); t.textContent = b.title || "Untitled";
+    const s = document.createElement("span"); s.textContent = `${fmtMin(b.start)}–${fmtMin(b.start + b.dur)}`;
+    el.append(t, s);
+    el.setAttribute("aria-label", `${b.title || "Untitled"}, ${fmtMin(b.start)} to ${fmtMin(b.start + b.dur)}. Edit`);
+    el.onclick = (e) => { e.stopPropagation(); openBlock(b); };
+    tl.appendChild(el);
+  });
+  if (sel === todayKey()) {
+    const n = new Date(), m = n.getHours()*60 + n.getMinutes();
+    if (m >= H0*60) { const ln = document.createElement("div"); ln.className = "now"; ln.style.top = (m - H0*60)/60*HOUR + "px"; tl.appendChild(ln); }
+  }
+  $("schedHint").hidden = d.blocks.length > 0;
+}
+$("tl").addEventListener("click", (e) => {
+  if (e.target.closest(".blk")) return;
+  const y = e.clientY - $("tl").getBoundingClientRect().top;
+  const m = Math.max(0, Math.min(23*60+30, H0*60 + Math.floor(y / hourPx() * 2) * 30));
+  openBlock({ id: null, start: m, dur: 60, title: "" });
+});
+$("addBlock").onclick = () => {
+  const d = getDay(sel), n = new Date();
+  let start = sel === todayKey() ? Math.ceil((n.getHours()*60 + n.getMinutes())/30)*30 : 9*60;
+  if (d.blocks.length && sel !== todayKey()) start = Math.max(...d.blocks.map(b => b.start + b.dur));
+  openBlock({ id: null, start: Math.min(start, 23*60), dur: 60, title: "" });
+};
+function scrollSchedule(){
+  const sc = $("schedScroll"), d = getDay(sel);
+  let m = d.blocks.length ? Math.min(...d.blocks.map(b => b.start)) : 8*60;
+  if (sel === todayKey()) { const n = new Date(); m = n.getHours()*60 + n.getMinutes() - 60; }
+  sc.scrollTop = Math.max(0, (m - H0*60) / 60 * hourPx() - 8);
+}
+
+/* ---------- Sheets (block + habit editors) ---------- */
+function openSheet(color, title, inner){
+  const host = $("sheetHost");
+  host.innerHTML = `<div class="scrim" id="scrim"><form class="panel ${color} sheet" id="sform" role="dialog" aria-modal="true" aria-labelledby="sh" autocomplete="off"><div class="bar"><h2 id="sh">${title}</h2></div><div class="pbody">${inner}</div></form></div>`;
+  const close = () => { host.innerHTML = ""; };
+  $("scrim").onclick = (e) => { if (e.target.id === "scrim") close(); };
+  host.querySelector("form").addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  const c = host.querySelector("[data-cancel]"); if (c) c.onclick = close;
+  return { form: $("sform"), close };
+}
+function openBlock(b){
+  const isNew = !b.id, k = sel;
+  const { form, close } = openSheet("cyan", isNew ? "New block" : "Edit block", `
+    <div class="field"><label for="bTitle">What</label><input id="bTitle" placeholder="e.g. Deep work, Lunch, Class" enterkeyhint="done"></div>
+    <div class="times">
+      <div class="field"><label for="bStart">Start</label><input id="bStart" type="time" step="300"></div>
+      <div class="field"><label for="bEnd">End</label><input id="bEnd" type="time" step="300"></div>
+    </div>
+    <div class="quick" aria-label="Length">${[30,60,90,120].map(m => `<button type="button" data-m="${m}">${m < 60 ? m + "m" : (m/60) + "h"}</button>`).join("")}</div>
+    <div class="acts">${isNew ? "" : `<button type="button" class="btn danger" id="bDel">Delete</button>`}<div><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn primary">${isNew ? "Add" : "Save"}</button></div></div>`);
+  const T = $("bTitle"), S = $("bStart"), E = $("bEnd");
+  T.value = b.title; S.value = fmtMin(b.start); E.value = fmtMin(Math.min(b.start + b.dur, 1439));
+  form.querySelector("[data-cancel]").onclick = close;
+  form.querySelectorAll(".quick button").forEach(q => q.onclick = () => { E.value = fmtMin(Math.min(parseHM(S.value) + +q.dataset.m, 1439)); });
+  if (!isNew) $("bDel").onclick = () => { const dd = getDay(k); dd.blocks = dd.blocks.filter(x => x.id !== b.id); changed(k); close(); renderSched(); toast("Block deleted"); };
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const st = parseHM(S.value); let en = parseHM(E.value); if (en <= st) en = Math.min(st + 60, 1440);
+    const dd = getDay(k);
+    if (isNew) dd.blocks.push({ id: uid(), start: st, dur: en - st, title: T.value.trim() });
+    else { const x = dd.blocks.find(x => x.id === b.id); if (x) { x.start = st; x.dur = en - st; x.title = T.value.trim(); } }
+    changed(k); close(); renderSched();
+  };
+  setTimeout(() => T.focus(), 30);
+}
+
+/* ---------- Habits ---------- */
+const SUGGEST = ["Drink water","Read 10 pages","Exercise","Meditate","Sleep by 11"];
+function streakOf(h){
+  let k = todayKey(), n = 0;
+  if (!(days[k] && days[k].habits[h.id])) k = addDays(k, -1);
+  while (days[k] && days[k].habits[h.id]) { n++; k = addDays(k, -1); }
+  return n;
+}
+function addHabit(name, xp){
+  name = name.trim().slice(0, 40); if (!name) return;
+  xp = XP_VALUES.includes(+xp) ? +xp : 10;
+  const used = habitsDoc.list.map(h => h.color);
+  const color = COLORS.find(c => !used.includes(c)) || COLORS[habitsDoc.list.length % COLORS.length];
+  habitsDoc.list.push({ id: uid(), name, color, xp });
+  changed("habits"); renderHabits();
+}
+function renderHabits(){
+  const box = $("habits"), ws = weekStart(sel), t = todayKey();
+  const list = habitsDoc.list;
+  box.innerHTML = "";
+  const done = list.filter(h => getDay(sel).habits[h.id]).length;
+  $("habCount").textContent = list.length ? `${done} of ${list.length} today` : "";
+  if (!list.length) {
+    const p = document.createElement("p"); p.className = "hint"; p.style.margin = "0";
+    p.textContent = "No habits yet. Each habit gets a row of circles for the week. Tap a circle to mark that day done.";
+    const sg = document.createElement("div"); sg.className = "suggest";
+    SUGGEST.forEach(s => { const b = document.createElement("button"); b.type = "button"; b.textContent = "+ " + s; b.onclick = () => addHabit(s, $("habXp").value); sg.appendChild(b); });
+    box.append(p, sg);
+    return;
+  }
+  const head = document.createElement("div"); head.className = "hdays"; head.setAttribute("aria-hidden", "true");
+  for (let i = 0; i < 7; i++) { const k = addDays(ws, i); const s = document.createElement("span"); s.textContent = WD[fromKey(k).getDay()].slice(0,2); if (k === sel) s.className = "sel"; head.appendChild(s); }
+  box.appendChild(head);
+  list.forEach(h => {
+    const row = document.createElement("div"); row.className = "hrow"; row.style.setProperty("--hc", `var(--${h.color})`);
+    const nm = document.createElement("div"); nm.className = "hname";
+    const nb = document.createElement("button"); nb.type = "button"; nb.setAttribute("aria-label", `Edit habit ${h.name}`);
+    const dot = document.createElement("i"); const label = document.createElement("span"); label.textContent = h.name;
+    label.style.overflow = "hidden"; label.style.textOverflow = "ellipsis";
+    nb.append(dot, label); nb.onclick = () => openHabit(h);
+    const st = streakOf(h), sk = document.createElement("span"); sk.className = "streak";
+    sk.innerHTML = (st >= 2 ? `<b>${st}</b>-day streak · ` : "") + `+${h.xp} XP`;
+    nm.append(nb, sk);
+    const disks = document.createElement("div"); disks.className = "disks";
+    for (let i = 0; i < 7; i++) {
+      const k = addDays(ws, i), on = !!(days[k] && days[k].habits[h.id]);
+      const b = document.createElement("button"); b.type = "button";
+      b.className = "disk" + (on ? " on" : "") + (k === sel ? " sel" : "") + (k > t ? " future" : "");
+      b.setAttribute("aria-pressed", on);
+      b.setAttribute("aria-label", `${h.name}, ${fromKey(k).toLocaleDateString(undefined, { weekday:"long" })}`);
+      b.innerHTML = FLOPPY;
+      b.onclick = () => {
+        const d = getDay(k), wasDone = isComplete(d);
+        if (d.habits[h.id]) delete d.habits[h.id]; else d.habits[h.id] = true;
+        changed(k); renderHabits();
+        if (d.habits[h.id]) toast(isComplete(d) && !wasDone ? `Day complete! ${dayXp(d).got} XP earned` : `+${h.xp} XP${k === sel ? "" : " on " + fromKey(k).toLocaleDateString(undefined, { weekday:"short" })}`);
+      };
+      disks.appendChild(b);
+    }
+    row.append(nm, disks);
+    box.appendChild(row);
+  });
+}
+$("habXp").innerHTML = XP_VALUES.map(x => `<option value="${x}" ${x === 10 ? "selected" : ""}>+${x} XP</option>`).join("");
+$("habAdd").onsubmit = (e) => { e.preventDefault(); addHabit($("habInput").value, $("habXp").value); $("habInput").value = ""; };
+function openHabit(h){
+  let color = h.color, xp = h.xp, armed = false;
+  const { form, close } = openSheet("purple", "Edit habit", `
+    <div class="field"><label for="hName">Name</label><input id="hName" maxlength="40" enterkeyhint="done"></div>
+    <div class="field"><label>XP each day</label><div class="quick" id="hXp">${XP_VALUES.map(x => `<button type="button" data-x="${x}" aria-pressed="${x === h.xp}">+${x}</button>`).join("")}</div></div>
+    <div class="field"><label>Color</label><div class="swatches" id="hSw">${COLORS.map(c => `<button type="button" data-c="${c}" style="--sw:var(--${c})" aria-label="${c}" aria-pressed="${c === h.color}"></button>`).join("")}</div></div>
+    <div class="acts"><button type="button" class="btn danger" id="hDel">Delete</button><div><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn primary">Save</button></div></div>`);
+  $("hName").value = h.name;
+  form.querySelectorAll("#hXp button").forEach(b => b.onclick = () => { xp = +b.dataset.x; form.querySelectorAll("#hXp button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+  form.querySelector("[data-cancel]").onclick = close;
+  form.querySelectorAll("#hSw button").forEach(b => b.onclick = () => { color = b.dataset.c; form.querySelectorAll("#hSw button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+  $("hDel").onclick = () => {
+    if (!armed) { armed = true; $("hDel").textContent = "Tap again to delete"; return; }
+    habitsDoc.list = habitsDoc.list.filter(x => x.id !== h.id); changed("habits"); close(); renderHabits(); toast(`Deleted "${h.name}"`);
+  };
+  form.onsubmit = (e) => { e.preventDefault(); const v = $("hName").value.trim(); if (v) h.name = v; h.color = color; h.xp = xp; changed("habits"); close(); renderHabits(); };
+}
+
+/* ---------- Notes ---------- */
+const notes = $("notes");
+function fitNotes(){ notes.style.height = "auto"; notes.style.height = Math.max(150, notes.scrollHeight + 4) + "px"; }
+function renderNotes(){ if (document.activeElement !== notes) notes.value = getDay(sel).notes; fitNotes(); }
+notes.oninput = () => { getDay(sel).notes = notes.value; fitNotes(); changed(sel); };
+
+/* ---------- Tab bar ---------- */
+const tabBtns = [...document.querySelectorAll(".tabs button")];
+tabBtns.forEach(b => b.onclick = () => { $(b.dataset.go).scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }); setTab(b.dataset.go); });
+function setTab(id){ tabBtns.forEach(b => b.classList.toggle("on", b.dataset.go === id)); }
+if ("IntersectionObserver" in window) {
+  const vis = {};
+  const io = new IntersectionObserver((es) => {
+    es.forEach(e => vis[e.target.id] = e.intersectionRatio);
+    const best = tabBtns.map(b => b.dataset.go).sort((a, b) => (vis[b] || 0) - (vis[a] || 0))[0];
+    if (best && vis[best] > 0) setTab(best);
+  }, { threshold: [0, .25, .5, .75, 1], rootMargin: "-90px 0px -40% 0px" });
+  tabBtns.forEach(b => io.observe($(b.dataset.go)));
+}
+
+/* ---------- Toast ---------- */
+let tt;
+function toast(msg){ const h = $("toastHost"); h.innerHTML = ""; const d = document.createElement("div"); d.className = "toast"; d.setAttribute("role","status"); d.textContent = msg; h.appendChild(d); clearTimeout(tt); tt = setTimeout(() => h.innerHTML = "", 2600); }
+
+/* ---------- Render ---------- */
+let pendingRemote = false;
+function editingInside(){ const a = document.activeElement; return a && a.closest && a.closest("main") && a.matches("input,textarea"); }
+function renderAll(){ renderHeader(); renderCarry(); renderSched(); renderTodos(); renderHabits(); renderNotes(); renderProgress(); }
+document.addEventListener("focusout", () => setTimeout(() => { if (pendingRemote && !editingInside()) { pendingRemote = false; renderAll(); } }, 0));
+let lastToday = todayKey();
+setInterval(() => { const t = todayKey(); if (t !== lastToday) { if (sel === lastToday) sel = t; lastToday = t; renderAll(); } else if (sel === t && !editingInside()) renderSched(); }, 60000);
+
+renderAll(); scrollSchedule();
+
+/* ---------- Cloudflare sync ----------
+   Entries live in your own Cloudflare Worker (see worker.js). Each device keeps a copy
+   in this browser too, so Daybook still works offline and catches up when it reconnects. */
+const LS_API = "daybook.sync.api", LS_TOKEN = "daybook.sync.key", LS_CURSOR = "daybook.sync.cursor";
+const lsGet = (k) => { try { return localStorage.getItem(k) || ""; } catch { return ""; } };
+const lsSet = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} };
+function cleanApi(u){ u = (u || "").trim().replace(/\/+$/, ""); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; return u; }
+let API = lsGet(LS_API), TOKEN = lsGet(LS_TOKEN);
+// A setup link (from the QR code) looks like  …/daybook/#api=<worker address>&key=<sync key>
+(() => {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("api") && h.get("key")) { API = cleanApi(h.get("api")); TOKEN = h.get("key").trim(); lsSet(LS_API, API); lsSet(LS_TOKEN, TOKEN); lsSet(LS_CURSOR, ""); setTimeout(() => toast("This device is now synced"), 600); }
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+})();
+
+async function apiFetch(path, opts = {}){
+  let r;
+  try { r = await fetch(API + path, { ...opts, cache: "no-store", headers: { "Authorization": "Bearer " + TOKEN, "Content-Type": "application/json" } }); }
+  catch { throw { code: "network" }; }
+  if (r.status === 401) throw { code: "badkey" };
+  let j = null; try { j = await r.json(); } catch {}
+  if (!r.ok) throw { code: "server", status: r.status, msg: j && j.error };
+  return j || {};
+}
+async function remoteSet(k, body){
+  const text = JSON.stringify(body);
+  await apiFetch("/doc/" + encodeURIComponent(k), { method: "PUT", body: text, keepalive: text.length < 60000 });
+}
+function applyDoc(id, data, force){
+  if (!force && (dirty.has(id) || writing[id])) return false;
+  if (id === "settings") settings = normSettings(data);
+  else if (id === "habits") habitsDoc = normalizeHabits(data);
+  else if (isDayKey(id)) days[id] = normalize(data);
+  else return false;
+  return true;
+}
+let pulling = false, firstPull = true;
+async function pull(){
+  if (!API || !TOKEN || pulling) return;
+  pulling = true;
+  try {
+    const since = firstPull ? 0 : Math.max(0, (+lsGet(LS_CURSOR) || 0) - 5000);
+    const res = await apiFetch("/changes?since=" + since);
+    const seen = new Set();
+    let got = 0;
+    for (const d of res.docs || []) { seen.add(d.id); if (applyDoc(d.id, d.data)) got++; }
+    mode = "db";
+    if (firstPull) {
+      firstPull = false;
+      // Upload anything this device has that Cloudflare doesn't (first device, or entries made offline).
+      for (const k in days) if (!seen.has(k) && hasContent(days[k])) changed(k);
+      if (!seen.has("habits") && habitsDoc.list.length) changed("habits");
+      if (!seen.has("settings") && settings.week1) changed("settings");
+    }
+    lsSet(LS_CURSOR, String(res.now || Date.now()));
+    if (!dirty.size && !Object.values(writing).some(Boolean)) setStatus("synced");
+    if (got) { writeLocal(); if (editingInside() || $("sheetHost").firstChild) pendingRemote = true; else renderAll(); }
+  } catch (e) {
+    setStatus(e && e.code === "badkey" ? "badkey" : e && e.code === "network" ? "offline" : "error");
+  } finally { pulling = false; }
+}
+function startSync(){
+  if (!API || !TOKEN) { mode = "local"; setStatus("setup"); return; }
+  mode = "db"; setStatus("connecting"); firstPull = true; pull();
+}
+setInterval(() => { if (document.visibilityState === "visible") pull(); }, 20000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pull(); });
+addEventListener("online", () => { if (mode === "db") { for (const k of dirty) flush(k); pull(); } });
+
+/* ---------- Sync settings sheet ---------- */
+function genKey(){ const a = new Uint8Array(24); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, "0")).join(""); }
+const setupLink = () => location.origin + location.pathname + "#api=" + encodeURIComponent(API) + "&key=" + encodeURIComponent(TOKEN);
+async function copyText(text, fallbackEl){
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch { if (fallbackEl) { fallbackEl.focus(); fallbackEl.select(); } toast("Press and hold to copy"); }
+}
+function exportJSON(){
+  const docs = {};
+  for (const k in days) if (hasContent(days[k])) docs[k] = days[k];
+  docs.habits = habitsDoc; docs.settings = settings;
+  return JSON.stringify({ app: "daybook", version: 2, exported: new Date().toISOString(), docs });
+}
+const transferHTML = `
+  <details><summary>Move entries from the Claude version</summary>
+    <div style="display:grid;gap:8px;margin-top:6px">
+      <p class="hint" style="margin:0">In the Claude version, tap the status button, copy your entries, then paste them here. Matching days are replaced with the pasted version.</p>
+      <textarea id="imText" placeholder='{"app":"daybook", …}' aria-label="Paste exported entries"></textarea>
+      <div class="rowbtns"><button type="button" class="btn small" id="imGo">Import</button><button type="button" class="btn small ghost" id="exGo">Copy a backup of this device</button></div>
+      <p class="err" id="imErr" hidden></p>
+    </div>
+  </details>`;
+function wireTransfer(close){
+  $("imGo").onclick = () => {
+    const err = $("imErr"); err.hidden = true;
+    let data; try { data = JSON.parse($("imText").value); } catch { err.textContent = "That isn't a Daybook export. Copy it again from the Claude version and paste the whole thing."; err.hidden = false; return; }
+    if (!data || data.app !== "daybook" || !data.docs) { err.textContent = "That isn't a Daybook export. Copy it again from the Claude version and paste the whole thing."; err.hidden = false; return; }
+    let n = 0;
+    for (const id in data.docs) if (applyDoc(id, data.docs[id], true)) { changed(id); n++; }
+    writeLocal(); close(); renderAll(); toast(`Imported ${n} record${n === 1 ? "" : "s"}`);
+  };
+  $("exGo").onclick = () => copyText(exportJSON(), $("imText"));
+}
+function openSync(){
+  if (API && TOKEN) {
+    const { form, close } = openSheet("cyan", "Sync", `
+      <p class="hint" style="margin:0">Connected to Cloudflare. Scan this code with your phone or iPad camera to open Daybook there, already synced.</p>
+      <div class="qr" id="qrBox" role="img" aria-label="QR code with your Daybook setup link"></div>
+      <p class="hint" style="margin:0;text-align:center">The code holds your sync key. Keep it private, like a password.</p>
+      <div class="rowbtns" style="justify-content:center"><button type="button" class="btn small" id="syCopy">Copy setup link</button><button type="button" class="btn small" id="syNow">Sync now</button></div>
+      <input id="syLink" class="mono" readonly hidden>
+      ${transferHTML}
+      <div class="acts"><button type="button" class="btn danger" id="syOff">Disconnect this device</button><div><button type="button" class="btn primary" data-cancel>Done</button></div></div>`);
+    const box = $("qrBox");
+    if (window.qrcode) { const qr = qrcode(0, "M"); qr.addData(setupLink()); qr.make(); box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
+    else box.outerHTML = `<p class="err">The QR code couldn't load. Use "Copy setup link" and open the link on your other device.</p>`;
+    $("syCopy").onclick = () => { const l = $("syLink"); l.value = setupLink(); l.hidden = false; copyText(l.value, l); };
+    $("syNow").onclick = () => { for (const k of dirty) flush(k); firstPull = true; pull(); toast("Syncing"); };
+    let armed = false;
+    $("syOff").onclick = () => {
+      if (!armed) { armed = true; $("syOff").textContent = "Tap again to disconnect"; return; }
+      API = TOKEN = ""; lsSet(LS_API, ""); lsSet(LS_TOKEN, ""); lsSet(LS_CURSOR, ""); mode = "local"; setStatus("setup"); close();
+      toast("Disconnected. Entries stay on this device.");
+    };
+    wireTransfer(close);
+    return;
+  }
+  const { form, close } = openSheet("cyan", "Set up sync", `
+    <p class="hint" style="margin:0">Connect Daybook to your Cloudflare Worker so your laptop, iPad and phone share the same entries. Until then, entries are saved on this device only.</p>
+    <div class="field"><label for="syKey">Sync key</label><input id="syKey" class="mono" autocomplete="off" spellcheck="false" placeholder="Make a new key, or paste yours"></div>
+    <div class="rowbtns"><button type="button" class="btn small" id="syGen">Make a new key</button><button type="button" class="btn small" id="syKeyCopy">Copy key</button></div>
+    <p class="hint" style="margin:0">Paste this key into Cloudflare as the <b>SYNC_KEY</b> secret.</p>
+    <div class="field"><label for="syApi">Worker address</label><input id="syApi" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://daybook-sync.yourname.workers.dev"></div>
+    <p class="err" id="syErr" hidden></p>
+    ${transferHTML}
+    <div class="acts"><div><button type="button" class="btn ghost" data-cancel>Cancel</button><button class="btn primary" id="syGo">Connect</button></div></div>`);
+  $("syKey").value = TOKEN || lsGet("daybook.sync.draftkey");
+  $("syApi").value = API || lsGet("daybook.sync.draftapi");
+  $("syGen").onclick = () => { $("syKey").value = genKey(); lsSet("daybook.sync.draftkey", $("syKey").value); };
+  $("syKey").oninput = () => lsSet("daybook.sync.draftkey", $("syKey").value.trim());
+  $("syApi").oninput = () => lsSet("daybook.sync.draftapi", $("syApi").value.trim());
+  $("syKeyCopy").onclick = () => { if (!$("syKey").value) $("syGen").onclick(); copyText($("syKey").value, $("syKey")); };
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const err = $("syErr"); err.hidden = true;
+    const api = cleanApi($("syApi").value), key = $("syKey").value.trim();
+    if (key.length < 24) { err.textContent = "The sync key needs at least 24 characters. Tap \"Make a new key\"."; err.hidden = false; return; }
+    if (!api) { err.textContent = "Add your Worker address. You'll find it on the Worker's page in Cloudflare."; err.hidden = false; return; }
+    const prev = [API, TOKEN]; API = api; TOKEN = key;
+    $("syGo").disabled = true; $("syGo").textContent = "Connecting…";
+    try {
+      await apiFetch("/changes?since=" + Date.now());
+      lsSet(LS_API, API); lsSet(LS_TOKEN, TOKEN); lsSet(LS_CURSOR, ""); lsSet("daybook.sync.draftkey", ""); lsSet("daybook.sync.draftapi", "");
+      close(); startSync(); toast("Connected. Tap the status button for your QR code.");
+    } catch (x) {
+      [API, TOKEN] = prev;
+      err.textContent = x.code === "badkey" ? "Cloudflare didn't accept this key. Check it matches the SYNC_KEY secret exactly."
+        : x.code === "network" ? "Couldn't reach that address. Check the Worker address and that the Worker is deployed."
+        : "The Worker answered with a problem: " + (x.msg || "error " + x.status) + ".";
+      err.hidden = false; $("syGo").disabled = false; $("syGo").textContent = "Connect";
+    }
+  };
+  wireTransfer(close);
+}
+$("status").onclick = openSync;
+startSync();
+})();
+</script>
+
+</body>
+</html>
