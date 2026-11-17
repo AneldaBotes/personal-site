@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slow Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4efe6; --card:#fbf8f2; --ink:#2b2621; --muted:#7a7066; --line:#e3d9ca;
+    --science:#4f7a6a; --nutrition:#b5793a; --astronomy:#3d4a7a; --tech:#8a4f6b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55}
+  .serif{font-family:Fraunces,Georgia,serif}
+  button{font:inherit;cursor:pointer}
+  a{color:inherit}
+
+  /* ---------- Loading screen ---------- */
+  #loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:var(--paper);z-index:10;transition:opacity .8s ease}
+  #loader.fade{opacity:0;pointer-events:none}
+  .breath{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#e9dcc6,#d6c3a3);animation:breathe 8s ease-in-out infinite;box-shadow:0 0 0 0 rgba(214,195,163,.5)}
+  @keyframes breathe{0%,100%{transform:scale(.7);box-shadow:0 0 0 0 rgba(214,195,163,.35)}50%{transform:scale(1.1);box-shadow:0 0 0 30px rgba(214,195,163,0)}}
+  #loadMsg{font-family:Fraunces,Georgia,serif;font-size:1.35rem;min-height:2em;text-align:center;padding:0 24px;transition:opacity .5s}
+  #loadList{list-style:none;padding:0;margin:0;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-size:.85rem;color:var(--muted)}
+  #loadList li{display:flex;align-items:center;gap:6px}
+  #loadList .dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .4s}
+  #loadList li.done{color:var(--ink)}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+  h1.logo{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:2rem;margin:0;letter-spacing:-.01em}
+  .date{color:var(--muted);font-size:.9rem;margin-top:2px}
+  .ghost{background:none;border:1px solid var(--line);border-radius:999px;padding:8px 16px;color:var(--ink)}
+  .ghost:hover{border-color:var(--muted)}
+  .intro{color:var(--muted);margin:0 0 26px;max-width:56ch}
+  .toast{background:#ece3d3;border-radius:10px;padding:12px 16px;margin-bottom:22px;font-size:.95rem}
+
+  /* ---------- Cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;min-height:210px}
+  .tag{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .tag i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .badge{margin-left:auto;font-size:.7rem;background:var(--ink);color:var(--paper);border-radius:999px;padding:2px 8px;letter-spacing:.05em}
+  .card h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.2rem;line-height:1.3;margin:0}
+  .meta{color:var(--muted);font-size:.85rem}
+  .card .spacer{flex:1}
+  .primary{align-self:flex-start;background:var(--ink);color:var(--paper);border:none;border-radius:999px;padding:9px 18px;font-weight:500}
+  .primary:hover{opacity:.88}
+  .done-note{color:var(--muted);font-size:.92rem}
+  footer.stats{margin-top:34px;color:var(--muted);font-size:.88rem;display:flex;gap:22px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+
+  /* ---------- Reader ---------- */
+  .back{background:none;border:none;color:var(--muted);padding:0;margin-bottom:22px}
+  .back:hover{color:var(--ink)}
+  .reader h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;line-height:1.2;margin:12px 0 8px}
+  .reader img{width:100%;border-radius:12px;margin:18px 0;display:block}
+  .summary{font-family:Fraunces,Georgia,serif;font-size:1.15rem;line-height:1.7;margin:20px 0}
+  .ritual{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:26px 0;display:flex;flex-direction:column;gap:14px}
+  .ritual p{margin:0}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  a.primary{text-decoration:none;display:inline-block}
+  .timer{font-variant-numeric:tabular-nums;color:var(--muted)}
+  textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:10px;padding:12px;font:1.05rem/1.5 Fraunces,Georgia,serif;background:#fff;color:var(--ink);resize:vertical}
+  textarea:focus{outline:2px solid #d6c3a3;border-color:transparent}
+
+  /* ---------- Log ---------- */
+  .log-entry{border-bottom:1px solid var(--line);padding:18px 0}
+  .log-entry q{font-family:Fraunces,Georgia,serif;font-size:1.15rem;display:block;quotes:none}
+  .empty{color:var(--muted);font-style:italic}
+
+  @media (prefers-reduced-motion:reduce){.breath{animation:none}}
+</style>
+</head>
+<body>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="breath" aria-hidden="true"></div>
+  <div id="loadMsg">Put the scroll down for a moment.</div>
+  <ul id="loadList"></ul>
+</div>
+
+<div class="wrap">
+  <main id="home" hidden>
+    <header>
+      <div>
+        <h1 class="logo">Slow Feed</h1>
+        <div class="date" id="today"></div>
+      </div>
+      <div class="row"><a class="ghost" href="index.html" style="text-decoration:none">← Anelda Botes</a><button class="ghost" data-action="log">Curiosity log</button></div>
+    </header>
+    <div id="toast"></div>
+    <p class="intro">One piece per topic, per day. Read it slowly, then write down the question it leaves you with.</p>
+    <div class="cards" id="cards"></div>
+    <footer class="stats" id="stats"></footer>
+  </main>
+
+  <section id="reader" class="reader" hidden></section>
+  <section id="logView" hidden></section>
+</div>
+
+<script>
+/* =========================================================
+   Slow Feed: one piece per topic per day, no infinite scroll.
+   Data: ScienceDaily RSS (via rss2json, then allorigins),
+   with Europe PMC / NASA APOD as fallbacks. Everything you
+   do is saved in this browser only (localStorage).
+   ========================================================= */
+
+const KEY = 'slowfeed.v1';
+const MIN_LOADING_MS = 4500;         // the intentional pause
+const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+/* ---------- Storage ---------- */
+function loadState(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; }
+}
+const S = Object.assign(
+  {seen:[], readDay:{}, readTitle:{}, log:[], cache:{}, focusMin:0, piecesRead:0, lastVisit:0},
+  loadState()
+);
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+function h(tag, attrs = {}, ...kids){
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)){
+    if (v == null || v === false) continue;
+    if (k === 'style') el.style.cssText = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()){
+    if (kid == null || kid === false) continue;
+    el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+function strip(html){
+  if (!html) return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+}
+function clip(text, n){ return text.length > n ? text.slice(0, n).replace(/\s+\S*$/, '') + '…' : text; }
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+async function fetchT(url, ms = 9000){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, {signal: ctrl.signal});
+    if (!r.ok) throw new Error(r.status);
+    return r;
+  } finally { clearTimeout(t); }
+}
+const fetchJSON = async (url) => (await fetchT(url)).json();
+function ago(ts){
+  if (!ts || isNaN(ts)) return '';
+  const d = Math.floor((Date.now() - ts) / 86400000);
+  if (d <= 0) return 'today';
+  if (d === 1) return 'yesterday';
+  if (d < 30) return d + ' days ago';
+  return new Date(ts).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'});
+}
+
+/* ---------- Sources ---------- */
+async function viaRss2json(feed){
+  const d = await fetchJSON('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed));
+  if (d.status !== 'ok' || !d.items?.length) throw new Error('rss2json empty');
+  return d.items.map(i => ({
+    id: i.link || i.guid, title: strip(i.title), link: i.link,
+    summary: clip(strip(i.description || i.content), 900),
+    date: +new Date((i.pubDate || '').replace(' ', 'T') + 'Z'),
+    source: 'ScienceDaily', kind: 'Article'
+  }));
+}
+async function viaAllOrigins(feed){
+  const txt = await (await fetchT('https://api.allorigins.win/raw?url=' + encodeURIComponent(feed))).text();
+  const xml = new DOMParser().parseFromString(txt, 'text/xml');
+  const items = [...xml.querySelectorAll('item')];
+  if (!items.length) throw new Error('allorigins empty');
+  return items.map(it => {
+    const g = t => it.querySelector(t)?.textContent || '';
+    return { id: g('link') || g('guid'), title: strip(g('title')), link: g('link'),
+             summary: clip(strip(g('description')), 900), date: +new Date(g('pubDate')),
+             source: 'ScienceDaily', kind: 'Article' };
+  });
+}
+async function viaEuropePMC(query){
+  const url = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=' + encodeURIComponent(query) +
+              '&sort=' + encodeURIComponent('P_PDATE_D desc') + '&format=json&resultType=core&pageSize=12';
+  const d = await fetchJSON(url);
+  const rs = (d.resultList?.result || []).filter(r => r.abstractText);
+  if (!rs.length) throw new Error('pmc empty');
+  return rs.map(r => ({
+    id: 'pmc:' + r.id, title: strip(r.title), link: `https://europepmc.org/article/${r.source}/${r.id}`,
+    summary: clip(strip(r.abstractText), 900),
+    date: +new Date(r.firstPublicationDate || r.firstIndexDate),
+    source: r.journalInfo?.journal?.title || 'Europe PMC', kind: 'Study'
+  }));
+}
+async function viaAPOD(){
+  const d = await fetchJSON('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+  if (!d.title) throw new Error('apod empty');
+  return [{
+    id: 'apod:' + d.date, title: d.title, summary: d.explanation,
+    link: `https://apod.nasa.gov/apod/ap${d.date.slice(2).replace(/-/g,'')}.html`,
+    date: +new Date(d.date + 'T12:00:00Z'), source: 'NASA Astronomy Picture of the Day',
+    kind: 'Picture', image: d.media_type === 'image' ? d.url : null
+  }];
+}
+
+const SD = 'https://www.sciencedaily.com/rss/';
+const TOPICS = [
+  { id:'science',   label:'Science',   color:'var(--science)',
+    sources:[() => viaRss2json(SD+'top/science.xml'), () => viaAllOrigins(SD+'top/science.xml'),
+             () => viaEuropePMC('OPEN_ACCESS:y AND (TITLE:"evolution" OR TITLE:"ecology" OR TITLE:"climate")')] },
+  { id:'nutrition', label:'Nutrition', color:'var(--nutrition)',
+    sources:[() => viaRss2json(SD+'health_medicine/nutrition.xml'), () => viaAllOrigins(SD+'health_medicine/nutrition.xml'),
+             () => viaEuropePMC('OPEN_ACCESS:y AND (TITLE:"nutrition" OR TITLE:"diet")')] },
+  { id:'astronomy', label:'Astronomy', color:'var(--astronomy)',
+    sources:[() => viaRss2json(SD+'space_time/astronomy.xml'), () => viaAPOD(),
+             () => viaAllOrigins(SD+'space_time/astronomy.xml')] },
+  { id:'tech',      label:'Tech',      color:'var(--tech)',
+    sources:[() => viaRss2json(SD+'top/technology.xml'), () => viaAllOrigins(SD+'top/technology.xml'),
+             () => viaEuropePMC('OPEN_ACCESS:y AND (TITLE:"machine learning" OR TITLE:"artificial intelligence")')] },
+];
+
+async function loadTopic(t){
+  for (const fn of t.sources){
+    try {
+      const items = (await fn()).filter(i => i.id && i.title);
+      if (items.length){
+        S.cache[t.id] = { items: items.slice(0, 20), at: Date.now() };
+        return { items, live: true };
+      }
+    } catch(e){ /* try the next source */ }
+  }
+  const c = S.cache[t.id];
+  return { items: c ? c.items : [], live: false };
+}
+
+/* ---------- Loading screen ---------- */
+const MESSAGES = ['Put the scroll down for a moment.', 'Breathe in… and out.', 'Gathering today’s reading…', 'Nothing here will refresh itself.'];
+function startLoaderMessages(){
+  let i = 0; const el = $('#loadMsg');
+  return setInterval(() => {
+    i = (i + 1) % MESSAGES.length;
+    el.style.opacity = 0;
+    setTimeout(() => { el.textContent = MESSAGES[i]; el.style.opacity = 1; }, 450);
+  }, 2200);
+}
+
+/* ---------- App state ---------- */
+const DATA = {};          // topicId -> {items, live}
+let prevVisit = S.lastVisit || 0;
+let current = null;       // {topic, item}
+let timerStart = null, timerTick = null;
+
+function pick(topicId){
+  const d = DATA[topicId]; if (!d) return null;
+  return d.items.filter(i => !S.seen.includes(i.id)).sort((a,b) => (b.date||0) - (a.date||0))[0] || null;
+}
+
+function show(id){
+  for (const s of ['#home', '#reader', '#logView']) $(s).hidden = (s !== id);
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Home ---------- */
+function renderHome(message){
+  $('#today').textContent = new Date().toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  $('#toast').replaceChildren(message ? h('div', {class:'toast'}, message) : '');
+  const cards = $('#cards'); cards.replaceChildren();
+
+  for (const t of TOPICS){
+    const d = DATA[t.id] || {items:[], live:false};
+    const tag = h('div', {class:'tag', style:`color:${t.color}`}, h('i', {style:`background:${t.color}`}), t.label);
+    let body;
+
+    if (S.readDay[t.id] === todayStr){
+      body = [h('h2', {}, S.readTitle[t.id] || 'Read today'),
+              h('div', {class:'spacer'}),
+              h('div', {class:'done-note'}, '✓ Read today. The next piece unlocks tomorrow.')];
+    } else {
+      const item = pick(t.id);
+      if (item){
+        if (item.date > prevVisit && prevVisit) tag.append(h('span', {class:'badge'}, 'NEW'));
+        body = [h('h2', {}, item.title),
+                h('div', {class:'meta'}, [item.kind, item.source, ago(item.date)].filter(Boolean).join(' · ')),
+                !d.live ? h('div', {class:'meta'}, 'Saved copy (couldn’t refresh just now)') : null,
+                h('div', {class:'spacer'}),
+                h('button', {class:'primary', onclick: () => openReader(t, item)}, 'Read this →')];
+      } else if (!d.live && !d.items.length){
+        body = [h('h2', {}, 'Couldn’t reach the sources'), h('div', {class:'spacer'}),
+                h('div', {class:'done-note'}, 'Check your connection and open Slow Feed again later.')];
+      } else {
+        body = [h('h2', {}, 'You’re all caught up'), h('div', {class:'spacer'}),
+                h('div', {class:'done-note'}, 'Nothing new yet. That’s the point.')];
+      }
+    }
+    cards.append(h('article', {class:'card'}, tag, body));
+  }
+
+  $('#stats').replaceChildren(
+    h('span', {}, `Deep reading: ${S.focusMin} min`),
+    h('span', {}, `Pieces read: ${S.piecesRead}`),
+    h('span', {}, `Questions logged: ${S.log.length}`)
+  );
+  show('#home');
+}
+
+/* ---------- Reader ---------- */
+function openReader(topic, item){
+  current = {topic, item};
+  timerStart = null; clearInterval(timerTick);
+  const timerEl = h('span', {class:'timer'}, '');
+  const reflect = h('div', {hidden:true});
+  const textarea = h('textarea', {placeholder:'What question does this leave you with?'});
+
+  const startLink = h('a', {class:'primary', href:item.link, target:'_blank', rel:'noopener',
+    onclick: () => {
+      if (timerStart) return;
+      timerStart = Date.now();
+      timerEl.textContent = 'Reading… 0 min';
+      timerTick = setInterval(() => {
+        timerEl.textContent = `Reading… ${Math.floor((Date.now() - timerStart) / 60000)} min`;
+      }, 15000);
+    }}, 'Open the full piece ↗');
+
+  reflect.append(
+    h('p', {class:'serif', style:'font-size:1.2rem'}, 'What question does this leave you with?'),
+    h('p', {class:'meta'}, 'Not a summary. Something you now want to know.'),
+    textarea,
+    h('div', {class:'row'},
+      h('button', {class:'primary', onclick: () => finish(textarea.value)}, 'Save to my curiosity log'),
+      h('button', {class:'ghost', onclick: () => finish('')}, 'Skip'))
+  );
+
+  $('#reader').replaceChildren(
+    h('button', {class:'back', onclick: () => { clearInterval(timerTick); renderHome(); }}, '← Back'),
+    h('div', {class:'tag', style:`color:${topic.color}`}, h('i', {style:`background:${topic.color}`}), topic.label),
+    h('h1', {}, item.title),
+    h('div', {class:'meta'}, [item.kind, item.source, ago(item.date)].filter(Boolean).join(' · ')),
+    item.image ? h('img', {src:item.image, alt:item.title}) : null,
+    h('p', {class:'summary'}, item.summary || 'No summary for this one. Open the full piece below.'),
+    h('div', {class:'ritual'},
+      h('p', {}, h('strong', {}, 'Before you start: '), 'put your phone in another room, close other tabs, and read it all the way through.'),
+      h('div', {class:'row'}, startLink, timerEl),
+      h('button', {class:'ghost', style:'align-self:flex-start', onclick: (e) => {
+        e.currentTarget.hidden = true; reflect.hidden = false; textarea.focus();
+      }}, 'I’ve finished reading'),
+      reflect)
+  );
+  show('#reader');
+}
+
+function finish(question){
+  clearInterval(timerTick);
+  const {topic, item} = current;
+  const mins = timerStart ? Math.min(180, Math.round((Date.now() - timerStart) / 60000)) : 0;
+  S.focusMin += mins;
+  S.piecesRead += 1;
+  if (!S.seen.includes(item.id)) S.seen.push(item.id);
+  S.seen = S.seen.slice(-500);
+  S.readDay[topic.id] = todayStr;
+  S.readTitle[topic.id] = item.title;
+  const q = question.trim();
+  if (q) S.log.unshift({q, title:item.title, link:item.link, topic:topic.label, day:todayStr});
+  save();
+  renderHome(q ? `Saved. That’s today’s ${topic.label.toLowerCase()}.` : `That’s today’s ${topic.label.toLowerCase()}.`);
+}
+
+/* ---------- Curiosity log ---------- */
+function renderLog(){
+  const copyBtn = h('button', {class:'ghost', onclick: async (e) => {
+    const text = S.log.map(l => `${l.day} [${l.topic}] ${l.q}\n  from: ${l.title} ${l.link}`).join('\n\n');
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied ✓'; }
+    catch(err){ e.target.textContent = 'Couldn’t copy'; }
+  }}, 'Copy all');
+
+  $('#logView').replaceChildren(
+    h('button', {class:'back', onclick: () => renderHome()}, '← Back'),
+    h('div', {class:'row', style:'justify-content:space-between'},
+      h('h1', {class:'serif', style:'margin:0'}, 'Curiosity log'), S.log.length ? copyBtn : null),
+    h('p', {class:'meta'}, 'Your questions, newest first. Pick one some evening and follow it.'),
+    S.log.length
+      ? S.log.map(l => h('div', {class:'log-entry'},
+          h('q', {}, l.q),
+          h('div', {class:'meta'}, `${l.day} · ${l.topic} · from `, h('a', {href:l.link, target:'_blank', rel:'noopener'}, l.title))))
+      : h('p', {class:'empty'}, 'No questions yet. They’ll appear here after you read something.')
+  );
+  show('#logView');
+}
+
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-action="log"]')) renderLog();
+});
+
+/* ---------- Boot ---------- */
+(async function boot(){
+  const list = $('#loadList');
+  const lis = {};
+  for (const t of TOPICS){
+    lis[t.id] = h('li', {}, h('span', {class:'dot'}), t.label);
+    list.append(lis[t.id]);
+  }
+  const msgTimer = startLoaderMessages();
+
+  const loading = Promise.all(TOPICS.map(async t => {
+    DATA[t.id] = await loadTopic(t);
+    lis[t.id].classList.add('done');
+    lis[t.id].querySelector('.dot').style.background = t.color;
+  }));
+
+  await Promise.all([loading, sleep(MIN_LOADING_MS)]);
+  clearInterval(msgTimer);
+  save();
+
+  renderHome();
+  $('#loader').classList.add('fade');
+  setTimeout(() => $('#loader').remove(), 900);
+
+  S.lastVisit = Date.now();
+  save();
+})();
+</script>
+</body>
+</html>
